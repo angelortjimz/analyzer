@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Character-pool, font, color, background, density, font-size, gain, attack, decay, and chaos customization.
 - Bundled IBM Plex Mono, Space Mono, and IBM Plex Serif fonts, plus System Mono fallback and catalog preloading.
 - Single-font, multi-font, monochrome, and multi-color compositions with By column and Random assignments.
-- Optional per-character random weight and italic styling that changes on the character shuffle slot and follows Chaos speed.
+- Optional per-character normal, bold, or italic styling that changes on the character shuffle slot and follows Chaos speed.
 - Deterministic Generate and Reset actions for the complete visual configuration.
 - Confined, borderless canvas workspace with a fixed composition column, full-width transport row, and responsive mobile fallback.
 - High-DPI rendering with device-pixel-ratio and glyph-column caps.

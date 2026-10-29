@@ -94,7 +94,7 @@ describe('font and color assignments', () => {
     expect(getColumnColor(config, column, 99)).toBe('#123456')
   })
 
-  it('keeps weight and italic at defaults when random weight and italic are off', () => {
+  it('keeps normal weight when the toggle is off', () => {
     const config = {
       ...DEFAULT_VISUAL_CONFIG,
       randomWeightItalic: false,
@@ -109,29 +109,27 @@ describe('font and color assignments', () => {
     }
   })
 
-  it('varies weight and italic on the character shuffle slot', () => {
+  it('selects normal, bold, or italic per character', () => {
     const config = {
       ...DEFAULT_VISUAL_CONFIG,
       randomWeightItalic: true,
       seed: 42,
     }
-    const weights = new Set<number>()
-    const italics = new Set<boolean>()
+    const variants = new Set<string>()
 
     for (const testColumn of columns.slice(0, 20)) {
       for (let time = 0; time < 5; time += 0.2) {
         const slot = getColumnShuffleSlot(testColumn, time, 0.9)
         const variant = getColumnFontVariant(config, testColumn, slot)
-        weights.add(variant.weight)
-        italics.add(variant.italic)
+        variants.add(`${variant.weight}|${variant.italic ? 'italic' : 'upright'}`)
       }
     }
 
-    expect(weights.size).toBeGreaterThan(1)
-    expect(italics.size).toBe(2)
+    expect(variants).toEqual(new Set(['400|upright', '700|upright', '400|italic']))
+    expect(variants.has('700|italic')).toBe(false)
   })
 
-  it('freezes random weight and italic at zero chaos', () => {
+  it('freezes random styling at zero chaos', () => {
     const config = {
       ...DEFAULT_VISUAL_CONFIG,
       randomWeightItalic: true,

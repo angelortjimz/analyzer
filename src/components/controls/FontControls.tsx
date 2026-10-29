@@ -63,7 +63,7 @@ export function FontControls({ config, onChange }: FontControlsProps) {
           <span>Random weight &amp; italic</span>
         </label>
         <span className="control-hint">
-          Weight and italic change with each character. Chaos sets the speed.
+          Each character becomes normal, bold, or italic. Chaos sets the speed.
         </span>
       </div>
 
