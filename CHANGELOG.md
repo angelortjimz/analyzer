@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Hardened MP4 export startup by retaining the export click's user activation, trying all advertised H.264/AAC recorder configurations, removing the optional recording timeslice, and reporting the failing startup stage instead of one generic error.
 - Corrected end-of-track offsets and seeking behavior when replaying or seeking near completion.
 - Ignored stale decode and playback callbacks when tracks or playback generations change.
 - Corrected displayed durations that decode slightly below a whole second.

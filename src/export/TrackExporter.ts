@@ -1,5 +1,4 @@
 import type { AudioEngine, AudioRecordingTap, PlaybackStatus } from '../audio/AudioEngine'
-import { preloadFontCatalog } from '../visual/fonts'
 import { detectMp4ExportSupport, type ExportSupport } from './capabilities'
 import type { ExportCanvasHandle } from './exportCanvas'
 import {
@@ -43,6 +42,82 @@ const INITIAL_SNAPSHOT: ExportSnapshot = {
   progress: 0,
   error: null,
   fileName: null,
+}
+
+type ExportStartStage = 'audio' | 'canvas' | 'recorder' | 'playback'
+
+interface RecorderAttempt {
+  mimeType: string
+  option: 'bitrate' | 'browser-default'
+  error: unknown
+}
+
+class ExportStartError extends Error {
+  readonly stage: ExportStartStage
+  readonly details: unknown
+
+  constructor(stage: ExportStartStage, message: string, details?: unknown) {
+    super(message)
+    this.name = 'ExportStartError'
+    this.stage = stage
+    this.details = details
+  }
+}
+
+class InvalidMp4Error extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'InvalidMp4Error'
+  }
+}
+
+function getErrorName(error: unknown): string {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    typeof error.name === 'string' &&
+    error.name.length > 0
+  ) {
+    return error.name
+  }
+
+  return 'UnknownError'
+}
+
+function getRecorderEventError(event: Event): unknown {
+  if ('error' in event) {
+    return event.error
+  }
+
+  return event
+}
+
+function getStartFailureCause(details: unknown): unknown {
+  if (typeof details === 'object' && details !== null && 'error' in details) {
+    return details.error
+  }
+
+  return details
+}
+
+function startMessageForStage(stage: ExportStartStage, error: unknown): string {
+  const errorName = getErrorName(error)
+
+  if (stage === 'audio') {
+    return 'The browser could not create an export audio stream. Try playing the track once, then export again.'
+  }
+  if (stage === 'canvas') {
+    return 'The browser could not capture the artwork for export. Try a standard output size or refresh the page.'
+  }
+  if (stage === 'playback') {
+    return 'The track could not start for export. Try playing it once, then export again.'
+  }
+  if (errorName === 'NotSupportedError') {
+    return 'This browser rejected every advertised MP4 H.264/AAC recording mode.'
+  }
+
+  return `MP4 recording could not start (${errorName}).`
 }
 
 const READY_STATUSES: readonly PlaybackStatus[] = ['ready', 'playing', 'paused', 'ended']
@@ -126,57 +201,47 @@ export class TrackExporter {
       fileName: null,
     })
 
-    try {
-      await preloadFontCatalog()
-      if (!this.isActive(session)) {
-        return
-      }
+    let stage: ExportStartStage = 'audio'
 
+    try {
       const audioTap = this.engine.createRecordingTap()
       if (!audioTap) {
-        throw new Error('The browser could not create an export audio stream.')
+        throw new ExportStartError('audio', 'The browser could not create an export audio track.')
       }
       session.audioTap = audioTap
 
+      stage = 'canvas'
       const target = handle.beginCapture(resolution)
       if (!target) {
-        throw new Error('The browser could not create the export canvas.')
+        throw new ExportStartError('canvas', 'The browser could not create the export canvas.')
       }
       session.canvasHandle = handle
 
       const videoStream = target.captureStream(30)
       const videoTrack = videoStream.getVideoTracks()[0]
       if (!videoTrack) {
-        throw new Error('The browser could not capture the canvas.')
+        throw new ExportStartError('canvas', 'The browser could not capture the artwork.')
       }
 
       session.stream = new MediaStream([videoTrack, ...audioTap.stream.getAudioTracks()])
-      const recorder = new MediaRecorder(session.stream, {
-        mimeType: session.mimeType,
-        videoBitsPerSecond: estimateVideoBitrate(target.width, target.height),
-        audioBitsPerSecond: 192_000,
-      })
+      if (session.stream.getAudioTracks().length === 0) {
+        throw new ExportStartError(
+          'audio',
+          'The browser created a recording stream without an audio track.',
+        )
+      }
+
+      stage = 'recorder'
+      const recorder = this.createRecorder(session, session.stream, target)
       session.recorder = recorder
 
-      recorder.ondataavailable = (event) => {
-        if (this.isActive(session) && event.data.size > 0) {
-          session.chunks.push(event.data)
-        }
-      }
-      recorder.onerror = () => {
-        this.failSession(session, GENERIC_ERROR)
-      }
-      recorder.onstop = () => {
-        void this.finalizeRecording(session, recorder)
-      }
-
+      stage = 'playback'
       handle.resetMotion()
       this.engine.seek(0)
       session.engineUnsubscribe = this.engine.subscribe(() => {
         this.handleEngineChange(session)
       })
 
-      recorder.start(1_000)
       session.phase = 'recording'
       this.updateSnapshot({
         status: 'recording',
@@ -198,12 +263,95 @@ export class TrackExporter {
 
       const status = this.engine.getSnapshot().status
       if (status !== 'playing' && status !== 'ended') {
-        throw new Error('Playback could not start for the export.')
+        throw new ExportStartError(
+          'playback',
+          this.engine.getSnapshot().error ?? 'Playback did not start for the export.',
+        )
       }
-    } catch {
+    } catch (error) {
+      const failure =
+        error instanceof ExportStartError
+          ? error
+          : new ExportStartError(stage, 'The export could not start.', error)
+      console.error(
+        `[Typographic Spectrum] MP4 export failed during ${failure.stage} startup.`,
+        failure.details ?? error,
+      )
+
       if (this.isActive(session)) {
-        this.failSession(session, GENERIC_ERROR)
+        this.failSession(
+          session,
+          startMessageForStage(failure.stage, getStartFailureCause(failure.details ?? error)),
+        )
       }
+    }
+  }
+
+  private createRecorder(
+    session: ActiveExport,
+    stream: MediaStream,
+    target: HTMLCanvasElement,
+  ): MediaRecorder {
+    const attempts: RecorderAttempt[] = []
+    const bitrates: MediaRecorderOptions = {
+      videoBitsPerSecond: estimateVideoBitrate(target.width, target.height),
+      audioBitsPerSecond: 192_000,
+    }
+
+    for (const mimeType of this.support.mimeTypes) {
+      for (const option of ['bitrate', 'browser-default'] as const) {
+        let recorder: MediaRecorder | null = null
+
+        try {
+          recorder = new MediaRecorder(stream, {
+            mimeType,
+            ...(option === 'bitrate' ? bitrates : {}),
+          })
+          this.attachRecorderHandlers(session, recorder)
+          recorder.start()
+          session.mimeType = mimeType
+          return recorder
+        } catch (error) {
+          attempts.push({ mimeType, option, error })
+          if (recorder) {
+            recorder.ondataavailable = null
+            recorder.onerror = null
+            recorder.onstop = null
+            if (recorder.state !== 'inactive') {
+              try {
+                recorder.stop()
+              } catch {
+                // A recorder that failed to start may already be inactive.
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const lastError = attempts.at(-1)?.error
+    throw new ExportStartError('recorder', 'No supported MP4 recorder configuration could start.', {
+      attempts,
+      error: lastError,
+    })
+  }
+
+  private attachRecorderHandlers(session: ActiveExport, recorder: MediaRecorder): void {
+    recorder.ondataavailable = (event) => {
+      if (this.isActive(session) && event.data.size > 0) {
+        session.chunks.push(event.data)
+      }
+    }
+    recorder.onerror = (event) => {
+      const error = getRecorderEventError(event)
+      console.error('[Typographic Spectrum] MediaRecorder stopped with an error.', error)
+      this.failSession(
+        session,
+        `The browser stopped MP4 recording (${getErrorName(error)}). No file was kept.`,
+      )
+    }
+    recorder.onstop = () => {
+      void this.finalizeRecording(session, recorder)
     }
   }
 
@@ -261,6 +409,10 @@ export class TrackExporter {
     if (status === 'ended') {
       this.finishTrack(session)
     } else if (status === 'error') {
+      console.error(
+        '[Typographic Spectrum] Audio playback failed during MP4 export.',
+        this.engine.getSnapshot().error,
+      )
       this.failSession(
         session,
         'Playback stopped during the export. The partial file was discarded.',
@@ -301,13 +453,15 @@ export class TrackExporter {
 
     const recorder = session.recorder
     if (!recorder || recorder.state === 'inactive') {
+      console.error('[Typographic Spectrum] MP4 recorder was not active when the track ended.')
       this.failSession(session, GENERIC_ERROR)
       return
     }
 
     try {
       recorder.stop()
-    } catch {
+    } catch (error) {
+      console.error('[Typographic Spectrum] MP4 recorder could not be stopped.', error)
       this.failSession(session, GENERIC_ERROR)
     }
   }
@@ -318,6 +472,7 @@ export class TrackExporter {
     }
 
     if (!session.endRequested) {
+      console.error('[Typographic Spectrum] MP4 recorder stopped before the track ended.')
       this.failSession(session, 'The export stopped before the track finished. No file was kept.')
       return
     }
@@ -330,12 +485,12 @@ export class TrackExporter {
 
     try {
       if (blob.size === 0) {
-        throw new Error('Empty recording.')
+        throw new InvalidMp4Error('The recorder produced an empty file.')
       }
 
       const header = await blob.slice(0, 12).arrayBuffer()
       if (!hasMp4FileHeader(header)) {
-        throw new Error('Invalid MP4 header.')
+        throw new InvalidMp4Error('The recorder did not produce an MP4 container.')
       }
 
       if (!this.isActive(session)) {
@@ -353,7 +508,8 @@ export class TrackExporter {
         error: null,
         fileName,
       })
-    } catch {
+    } catch (error) {
+      console.error('[Typographic Spectrum] MP4 finalization failed.', error)
       if (!this.isActive(session)) {
         return
       }
@@ -364,7 +520,7 @@ export class TrackExporter {
         elapsed: session.duration,
         duration: session.duration,
         progress: 1,
-        error: INVALID_MP4_ERROR,
+        error: error instanceof InvalidMp4Error ? INVALID_MP4_ERROR : GENERIC_ERROR,
         fileName: null,
       })
     }
