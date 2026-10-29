@@ -6,6 +6,7 @@ export interface VisualConfig {
   glyphs: string
   fontIds: FontId[]
   fontAssignment: AssignmentMode
+  randomWeightItalic: boolean
   backgroundColor: string
   colors: string[]
   colorAssignment: AssignmentMode
@@ -22,6 +23,7 @@ export const DEFAULT_VISUAL_CONFIG: VisualConfig = {
   glyphs: 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789:;+=*#%@',
   fontIds: [DEFAULT_FONT_ID],
   fontAssignment: 'column',
+  randomWeightItalic: false,
   backgroundColor: '#ffffff',
   colors: ['#171717'],
   colorAssignment: 'column',
@@ -127,6 +129,10 @@ export function sanitizeVisualConfig(value: unknown): VisualConfig {
       record.fontAssignment === 'random' || record.fontAssignment === 'column'
         ? record.fontAssignment
         : DEFAULT_VISUAL_CONFIG.fontAssignment,
+    randomWeightItalic:
+      typeof record.randomWeightItalic === 'boolean'
+        ? record.randomWeightItalic
+        : DEFAULT_VISUAL_CONFIG.randomWeightItalic,
     backgroundColor: isHexColor(record.backgroundColor)
       ? record.backgroundColor.toLowerCase()
       : DEFAULT_VISUAL_CONFIG.backgroundColor,

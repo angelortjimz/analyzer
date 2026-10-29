@@ -1,4 +1,4 @@
-import { getColumnColor, getColumnFontId } from './assignments'
+import { getColumnColor, getColumnFontId, getColumnFontVariant } from './assignments'
 import {
   createCrestLayout,
   getColumnGlyphIndex,
@@ -124,7 +124,7 @@ export class TypographicRenderer {
     context.textBaseline = 'middle'
     context.globalAlpha = 1
 
-    let activeFont = ''
+    let activeFontKey = ''
     let activeColor = ''
 
     for (const column of this.layout.columns) {
@@ -140,11 +140,14 @@ export class TypographicRenderer {
         continue
       }
 
-      const font = getFontFamily(getColumnFontId(this.config, column, slot))
+      const fontId = getColumnFontId(this.config, column, slot)
+      const font = getFontFamily(fontId)
+      const variant = getColumnFontVariant(this.config, column, slot)
+      const fontKey = `${fontId}|${variant.weight}|${variant.italic ? 'italic' : 'normal'}`
       const color = getColumnColor(this.config, column, slot)
-      if (font !== activeFont) {
-        context.font = `400 ${this.config.fontSize}px ${font}`
-        activeFont = font
+      if (fontKey !== activeFontKey) {
+        context.font = `${variant.italic ? 'italic ' : ''}${variant.weight} ${this.config.fontSize}px ${font}`
+        activeFontKey = fontKey
       }
       if (color !== activeColor) {
         context.fillStyle = color

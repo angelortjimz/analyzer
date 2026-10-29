@@ -58,5 +58,6 @@ export function generateVisualConfig(seed: number): VisualConfig {
     decay: rounded(0.12 + random() * 0.58, 0.01),
     chaos,
     seed: normalizedSeed,
+    randomWeightItalic: random() < 0.35,
   })
 }

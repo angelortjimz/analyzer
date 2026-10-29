@@ -27,6 +27,10 @@ export const FONT_CATALOG = [
 
 export type FontId = (typeof FONT_CATALOG)[number]['id']
 
+export const FONT_WEIGHTS = [400, 700] as const
+
+export type FontWeight = (typeof FONT_WEIGHTS)[number]
+
 export const DEFAULT_FONT_ID: FontId = 'system-mono'
 
 export function isFontId(value: unknown): value is FontId {
@@ -47,7 +51,12 @@ export async function preloadFontCatalog(): Promise<void> {
   }
 
   const bundledFonts = FONT_CATALOG.filter((font) => font.id !== 'system-mono')
-  await Promise.allSettled(
-    bundledFonts.map((font) => document.fonts.load(`400 20px "${font.family}"`)),
-  )
+  const loads: Array<Promise<FontFace[]>> = []
+  for (const font of bundledFonts) {
+    for (const weight of FONT_WEIGHTS) {
+      loads.push(document.fonts.load(`${weight} 20px "${font.family}"`))
+      loads.push(document.fonts.load(`italic ${weight} 20px "${font.family}"`))
+    }
+  }
+  await Promise.allSettled(loads)
 }

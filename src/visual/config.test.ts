@@ -59,14 +59,25 @@ describe('sanitizeVisualConfig', () => {
       ...DEFAULT_VISUAL_CONFIG,
       fontIds: [],
       fontAssignment: 'frequency',
+      randomWeightItalic: 'yes',
       colors: [],
       colorAssignment: 'frequency',
     })
 
     expect(config.fontIds).toEqual(DEFAULT_VISUAL_CONFIG.fontIds)
     expect(config.fontAssignment).toBe(DEFAULT_VISUAL_CONFIG.fontAssignment)
+    expect(config.randomWeightItalic).toBe(DEFAULT_VISUAL_CONFIG.randomWeightItalic)
     expect(config.colors).toEqual(DEFAULT_VISUAL_CONFIG.colors)
     expect(config.colorAssignment).toBe(DEFAULT_VISUAL_CONFIG.colorAssignment)
+  })
+
+  it('preserves the random weight and italic toggle', () => {
+    expect(
+      sanitizeVisualConfig({
+        ...DEFAULT_VISUAL_CONFIG,
+        randomWeightItalic: true,
+      }).randomWeightItalic,
+    ).toBe(true)
   })
 
   it('handles completely invalid input', () => {

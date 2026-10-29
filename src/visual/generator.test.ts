@@ -33,6 +33,7 @@ describe('generateVisualConfig', () => {
       expect(config.density).toBeLessThanOrEqual(CONFIG_LIMITS.density.max)
       expect(config.chaos).toBeGreaterThanOrEqual(0)
       expect(config.chaos).toBeLessThanOrEqual(1)
+      expect(typeof config.randomWeightItalic).toBe('boolean')
       expect(sanitizeVisualConfig(config)).toEqual(config)
     }
   })

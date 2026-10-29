@@ -53,6 +53,20 @@ export function FontControls({ config, onChange }: FontControlsProps) {
         onChange={(fontAssignment) => onChange({ fontAssignment })}
       />
 
+      <div className="toggle-control">
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={config.randomWeightItalic}
+            onChange={(event) => onChange({ randomWeightItalic: event.currentTarget.checked })}
+          />
+          <span>Random weight &amp; italic</span>
+        </label>
+        <span className="control-hint">
+          Weight and italic change with each character. Chaos sets the speed.
+        </span>
+      </div>
+
       <SliderControl
         label="Font size"
         value={config.fontSize}

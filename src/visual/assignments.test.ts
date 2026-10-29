@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getColumnColor, getColumnFontId } from './assignments'
+import { getColumnColor, getColumnFontId, getColumnFontVariant } from './assignments'
 import { createCrestLayout, getColumnShuffleSlot, getColumnStyleIndex } from './columns'
 import { DEFAULT_VISUAL_CONFIG } from './config'
 
@@ -92,5 +92,66 @@ describe('font and color assignments', () => {
 
     expect(getColumnFontId(config, column, 99)).toBe('space-mono')
     expect(getColumnColor(config, column, 99)).toBe('#123456')
+  })
+
+  it('keeps weight and italic at defaults when random weight and italic are off', () => {
+    const config = {
+      ...DEFAULT_VISUAL_CONFIG,
+      randomWeightItalic: false,
+      seed: 42,
+    }
+
+    for (let slot = 0; slot < 20; slot += 1) {
+      expect(getColumnFontVariant(config, column, slot)).toEqual({
+        weight: 400,
+        italic: false,
+      })
+    }
+  })
+
+  it('varies weight and italic on the character shuffle slot', () => {
+    const config = {
+      ...DEFAULT_VISUAL_CONFIG,
+      randomWeightItalic: true,
+      seed: 42,
+    }
+    const weights = new Set<number>()
+    const italics = new Set<boolean>()
+
+    for (const testColumn of columns.slice(0, 20)) {
+      for (let time = 0; time < 5; time += 0.2) {
+        const slot = getColumnShuffleSlot(testColumn, time, 0.9)
+        const variant = getColumnFontVariant(config, testColumn, slot)
+        weights.add(variant.weight)
+        italics.add(variant.italic)
+      }
+    }
+
+    expect(weights.size).toBeGreaterThan(1)
+    expect(italics.size).toBe(2)
+  })
+
+  it('freezes random weight and italic at zero chaos', () => {
+    const config = {
+      ...DEFAULT_VISUAL_CONFIG,
+      randomWeightItalic: true,
+      seed: 42,
+    }
+    const initialSlot = getColumnShuffleSlot(column, 0, 0)
+    const laterSlot = getColumnShuffleSlot(column, 1_000, 0)
+
+    expect(getColumnFontVariant(config, column, laterSlot)).toEqual(
+      getColumnFontVariant(config, column, initialSlot),
+    )
+  })
+
+  it('is deterministic for the same column and shuffle slot', () => {
+    const config = {
+      ...DEFAULT_VISUAL_CONFIG,
+      randomWeightItalic: true,
+      seed: 42,
+    }
+
+    expect(getColumnFontVariant(config, column, 7)).toEqual(getColumnFontVariant(config, column, 7))
   })
 })

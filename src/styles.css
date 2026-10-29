@@ -522,6 +522,14 @@ select:focus-visible,
   accent-color: var(--ink);
 }
 
+.toggle-control {
+  margin-bottom: 20px;
+}
+
+.toggle-control .control-hint {
+  margin-top: 6px;
+}
+
 .color-setting {
   display: flex;
   align-items: center;
