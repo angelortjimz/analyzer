@@ -138,19 +138,18 @@ Audio file
 
 #### Character customization
 
-- [ ] Support custom character sets.
-- [ ] Support unordered character pools whose selection is independent of amplitude.
-- [ ] Optionally derive glyphs from user-provided source text.
+- [ ] Support custom character pools, including weighted duplicates.
+- [ ] Derive unique glyph pools from user-provided source text.
 - [ ] Add letters-only and symbols-only starting presets.
-- [ ] Control the amount of character substitution.
+- [ ] Keep character selection independent of amplitude through the existing Chaos control.
 
 #### Font customization
 
 - [ ] Provide a small collection of bundled, export-safe font choices.
 - [ ] Support a single-font composition.
 - [ ] Support multiple enabled fonts in one composition.
-- [ ] Assign fonts stably per column, by frequency region, or by a regenerated composition seed.
-- [ ] Wait for font loading before rendering or exporting.
+- [ ] Assign fonts stably per column or reshuffle them whenever the column's character changes.
+- [ ] Wait for the font catalog to load before rendering or exporting.
 - [ ] Ensure changing fonts does not cause uncontrolled layout jumps.
 
 #### Color customization
@@ -158,21 +157,25 @@ Audio file
 - [ ] Default to near-black glyphs on a plain white background.
 - [ ] Support custom foreground and background colors.
 - [ ] Support multi-color palettes.
-- [ ] Assign colors by frequency region or stable glyph/column identity.
+- [ ] Assign colors stably per column or reshuffle them whenever the column's character changes.
 - [ ] Retain a simple monochrome mode.
 
 #### Presets and interface
 
 - [ ] Add curated presets that demonstrate distinct but restrained looks.
-- [ ] Save and load user presets through `localStorage`.
-- [ ] Add reset-to-default and regenerate-composition actions.
+- [ ] Save and load versioned user presets through `localStorage`.
+- [ ] Add reset-to-default and Generate actions.
+- [ ] Make Generate randomize the complete visual configuration within valid, readable ranges.
 - [ ] Group controls progressively so common options remain easy to find.
 
 **Exit criteria**
 
 - Single-font, multi-font, monochrome, and multi-color compositions all work reliably.
-- Font and color assignments do not change randomly on every animation frame.
-- A saved preset reproduces the same visual configuration after reloading.
+- By-column font and color assignments remain fixed while characters shuffle.
+- Random font and color assignments change on exactly the character's shuffle slot.
+- Zero Chaos freezes characters, fonts, and Random color assignments.
+- Silence uses the selected background, which is white by default.
+- A saved preset reproduces the complete visual configuration after reloading.
 - The default preset remains the most immediate and polished experience.
 
 ---

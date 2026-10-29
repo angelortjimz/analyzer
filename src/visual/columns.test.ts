@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { createCrestLayout, getColumnGlyphIndex, getCrestY, type CrestLayout } from './columns'
+import {
+  createCrestLayout,
+  getColumnGlyphIndex,
+  getColumnShuffleSlot,
+  getCrestY,
+  type CrestLayout,
+} from './columns'
 
 function makeLayout(): CrestLayout {
   return { columns: [], topY: 60, baselineY: 660 }
@@ -59,35 +65,40 @@ describe('getCrestY', () => {
   })
 })
 
-describe('getColumnGlyphIndex', () => {
+describe('column shuffling', () => {
   const column = createCrestLayout(1_280, 720, 20, 1, 42).columns[3]
 
   it('keeps glyphs stable at zero chaos', () => {
-    const first = getColumnGlyphIndex(column, 0, 0, 64, 42)
-    const later = getColumnGlyphIndex(column, 1_000, 0, 64, 42)
+    const firstSlot = getColumnShuffleSlot(column, 0, 0)
+    const laterSlot = getColumnShuffleSlot(column, 1_000, 0)
+    const first = getColumnGlyphIndex(column, firstSlot, 64, 42)
+    const later = getColumnGlyphIndex(column, laterSlot, 64, 42)
 
+    expect(laterSlot).toBe(0)
     expect(later).toBe(first)
   })
 
   it('changes deterministically as shuffle time advances', () => {
     const indices = new Set(
       Array.from({ length: 12 }, (_, index) =>
-        getColumnGlyphIndex(column, index * 0.2, 0.8, 64, 42),
+        getColumnGlyphIndex(column, getColumnShuffleSlot(column, index * 0.2, 0.8), 64, 42),
       ),
     )
 
+    const slot = getColumnShuffleSlot(column, 2, 0.8)
     expect(indices.size).toBeGreaterThan(1)
-    expect(getColumnGlyphIndex(column, 2, 0.8, 64, 42)).toBe(
-      getColumnGlyphIndex(column, 2, 0.8, 64, 42),
+    expect(getColumnGlyphIndex(column, slot, 64, 42)).toBe(
+      getColumnGlyphIndex(column, slot, 64, 42),
     )
   })
 
   it('keeps selections inside the character pool', () => {
     for (let time = 0; time < 5; time += 0.1) {
-      const index = getColumnGlyphIndex(column, time, 1, 17, 42)
+      const slot = getColumnShuffleSlot(column, time, 1)
+      const index = getColumnGlyphIndex(column, slot, 17, 42)
       expect(index).toBeGreaterThanOrEqual(0)
       expect(index).toBeLessThan(17)
     }
-    expect(getColumnGlyphIndex(column, 0, 1, 0, 42)).toBe(-1)
+    expect(getColumnGlyphIndex(column, 0, 0, 42)).toBe(-1)
   })
 })

@@ -4,15 +4,67 @@ import { AudioUpload } from './components/AudioUpload'
 import { PlaybackControls } from './components/PlaybackControls'
 import { TypographicCanvas } from './components/TypographicCanvas'
 import { VisualControls } from './components/VisualControls'
-import { DEFAULT_VISUAL_CONFIG, type VisualConfig } from './visual/config'
+import { DEFAULT_VISUAL_CONFIG, sanitizeVisualConfig, type VisualConfig } from './visual/config'
+import {
+  BUILTIN_PRESETS,
+  createUserPreset,
+  generateVisualConfig,
+  loadUserPresets,
+  saveUserPresets,
+  type UserPreset,
+} from './visual/presets'
+import { randomSeed } from './visual/random'
 
 export default function App() {
   const { engine, snapshot } = useAudioEngine()
-  const [config, setConfig] = useState<VisualConfig>(DEFAULT_VISUAL_CONFIG)
+  const [config, setConfig] = useState<VisualConfig>(() =>
+    sanitizeVisualConfig(DEFAULT_VISUAL_CONFIG),
+  )
+  const [userPresets, setUserPresets] = useState<UserPreset[]>(loadUserPresets)
+  const [storageMessage, setStorageMessage] = useState<string | null>(null)
   const isIdle = snapshot.status === 'idle'
 
   const updateConfig = (patch: Partial<VisualConfig>) => {
     setConfig((current) => ({ ...current, ...patch }))
+  }
+
+  const applyBuiltInPreset = (id: string) => {
+    const preset = BUILTIN_PRESETS.find((candidate) => candidate.id === id)
+    if (preset) {
+      setConfig(sanitizeVisualConfig(preset.config))
+      setStorageMessage(null)
+    }
+  }
+
+  const applyUserPreset = (id: string) => {
+    const preset = userPresets.find((candidate) => candidate.id === id)
+    if (preset) {
+      setConfig(sanitizeVisualConfig(preset.config))
+      setStorageMessage(`Loaded “${preset.name}”.`)
+    }
+  }
+
+  const savePreset = (name: string): boolean => {
+    const next = [createUserPreset(name, config), ...userPresets].slice(0, 100)
+    const result = saveUserPresets(next)
+    if (result.ok) {
+      setUserPresets(next)
+      setStorageMessage(`Saved “${name.trim()}”.`)
+      return true
+    }
+
+    setStorageMessage(result.error)
+    return false
+  }
+
+  const generate = () => {
+    setConfig(generateVisualConfig(randomSeed()))
+    setStorageMessage('Generated a new composition.')
+  }
+
+  const reset = () => {
+    setConfig(sanitizeVisualConfig(DEFAULT_VISUAL_CONFIG))
+    setStorageMessage('Restored the default composition.')
   }
 
   return (
@@ -54,7 +106,20 @@ export default function App() {
         )}
       </section>
 
-      {!isIdle && <VisualControls config={config} onChange={updateConfig} />}
+      {!isIdle && (
+        <VisualControls
+          config={config}
+          builtInPresets={BUILTIN_PRESETS}
+          userPresets={userPresets}
+          storageMessage={storageMessage}
+          onChange={updateConfig}
+          onApplyBuiltIn={applyBuiltInPreset}
+          onApplyUser={applyUserPreset}
+          onSavePreset={savePreset}
+          onGenerate={generate}
+          onReset={reset}
+        />
+      )}
     </main>
   )
 }

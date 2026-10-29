@@ -1,6 +1,14 @@
+import { getColumnColor, getColumnFontId } from './assignments'
+import {
+  createCrestLayout,
+  getColumnGlyphIndex,
+  getColumnShuffleSlot,
+  getCrestY,
+  type CrestLayout,
+} from './columns'
+import { clamp, parseCharacterSource, VISUAL_CONSTANTS, type VisualConfig } from './config'
 import { BandEnvelopes } from './envelope'
-import { createCrestLayout, getColumnGlyphIndex, getCrestY, type CrestLayout } from './columns'
-import { clamp, parseGlyphs, VISUAL_CONSTANTS, type VisualConfig } from './config'
+import { getFontFamily } from './fonts'
 import { SpectrumProcessor } from './spectrum'
 
 function sampleBand(energies: Float32Array, position: number): number {
@@ -37,7 +45,7 @@ export class TypographicRenderer {
     this.canvas = canvas
     this.context = context
     this.config = { ...config }
-    this.glyphs = parseGlyphs(config.glyphs)
+    this.glyphs = parseCharacterSource(config)
     this.spectrum = new SpectrumProcessor({
       sampleRate: VISUAL_CONSTANTS.defaultSampleRate,
       fftSize: VISUAL_CONSTANTS.fftSize,
@@ -49,7 +57,7 @@ export class TypographicRenderer {
   setConfig(config: VisualConfig): void {
     const previous = this.config
     this.config = { ...config }
-    this.glyphs = parseGlyphs(config.glyphs)
+    this.glyphs = parseCharacterSource(config)
 
     if (
       previous.fontSize !== config.fontSize ||
@@ -106,13 +114,14 @@ export class TypographicRenderer {
 
     const context = this.context
     context.clearRect(0, 0, this.width, this.height)
-    context.fillStyle = VISUAL_CONSTANTS.paper
+    context.fillStyle = this.config.backgroundColor
     context.fillRect(0, 0, this.width, this.height)
-    context.fillStyle = VISUAL_CONSTANTS.ink
     context.textAlign = 'center'
     context.textBaseline = 'middle'
-    context.font = `400 ${this.config.fontSize}px ${VISUAL_CONSTANTS.fontFamily}`
     context.globalAlpha = 1
+
+    let activeFont = ''
+    let activeColor = ''
 
     for (const column of this.layout.columns) {
       const bandPosition = column.frequencyPosition * Math.max(0, energies.length - 1)
@@ -121,15 +130,21 @@ export class TypographicRenderer {
         continue
       }
 
-      const glyphIndex = getColumnGlyphIndex(
-        column,
-        timeSeconds,
-        this.config.chaos,
-        this.glyphs.length,
-        this.config.seed,
-      )
+      const slot = getColumnShuffleSlot(column, timeSeconds, this.config.chaos)
+      const glyphIndex = getColumnGlyphIndex(column, slot, this.glyphs.length, this.config.seed)
       if (glyphIndex < 0) {
         continue
+      }
+
+      const font = getFontFamily(getColumnFontId(this.config, column, slot))
+      const color = getColumnColor(this.config, column, slot)
+      if (font !== activeFont) {
+        context.font = `400 ${this.config.fontSize}px ${font}`
+        activeFont = font
+      }
+      if (color !== activeColor) {
+        context.fillStyle = color
+        activeColor = color
       }
 
       context.fillText(this.glyphs[glyphIndex], column.x, getCrestY(energy, this.layout))

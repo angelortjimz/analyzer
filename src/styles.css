@@ -29,7 +29,9 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -41,6 +43,9 @@ input[type='range'] {
 
 button:focus-visible,
 input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
 .file-input:focus-visible + .file-label {
   outline: 2px solid var(--focus);
   outline-offset: 4px;
@@ -71,6 +76,9 @@ input:focus-visible,
   z-index: 1;
   top: 28px;
   left: 32px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  background: rgb(255 255 255 / 94%);
   pointer-events: none;
 }
 
@@ -95,6 +103,11 @@ input:focus-visible,
   bottom: 28px;
   left: 32px;
   max-width: calc(100% - 330px);
+}
+
+.transport:not(.transport--idle) {
+  padding: 8px 10px;
+  background: rgb(255 255 255 / 94%);
 }
 
 .transport--idle {
@@ -211,35 +224,59 @@ input:focus-visible,
   z-index: 2;
   top: 86px;
   right: 26px;
-  width: 228px;
+  width: 262px;
   max-height: calc(100% - 132px);
-  padding: 12px 6px 20px 18px;
+  padding: 12px 8px 20px 18px;
   overflow-y: auto;
-  background: var(--paper);
+  background: rgb(255 255 255 / 96%);
   scrollbar-width: thin;
   scrollbar-color: var(--quiet) transparent;
 }
 
 .visual-controls h2 {
-  margin: 0 0 24px;
+  margin: 0 0 20px;
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
+.control-group {
+  margin-bottom: 20px;
+}
+
+.control-group summary {
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+}
+
+.control-group[open] summary {
+  margin-bottom: 15px;
+  color: var(--ink);
+}
+
+.control-group-body {
+  padding-bottom: 2px;
+}
+
 .glyph-control {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .glyph-control label,
-.slider-label {
+.slider-label,
+.option-label {
   color: var(--muted);
   font-size: 9px;
   letter-spacing: 0.025em;
 }
 
-.glyph-control input {
+.glyph-control input,
+.glyph-control textarea {
   width: 100%;
   margin-top: 8px;
   padding: 7px 0;
@@ -251,9 +288,188 @@ input:focus-visible,
   font-size: 12px;
 }
 
-.glyph-control input:focus {
+.glyph-control textarea {
+  min-height: 54px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.glyph-control input:focus,
+.glyph-control textarea:focus {
   border-bottom-color: var(--ink);
   outline: none;
+}
+
+.control-hint {
+  display: block;
+  margin-top: 8px;
+  color: var(--quiet);
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.option-control {
+  margin-bottom: 20px;
+}
+
+.option-label {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.option-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.option-button {
+  padding: 6px 8px;
+  border: 0;
+  color: var(--muted);
+  background: #f2f2ef;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.option-button[aria-pressed='true'] {
+  color: var(--paper);
+  background: var(--ink);
+}
+
+.choice-fieldset {
+  padding: 0;
+  margin: 0 0 20px;
+  border: 0;
+}
+
+.choice-fieldset legend {
+  padding: 0;
+  margin-bottom: 9px;
+  color: var(--muted);
+  font-size: 9px;
+  letter-spacing: 0.025em;
+}
+
+.choice-list {
+  display: grid;
+  gap: 8px;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.check-row input {
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.color-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+input[type='color'] {
+  width: 32px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.palette-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.palette-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.preset-select {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 0;
+  color: var(--ink);
+  background: #f2f2ef;
+  font-size: 10px;
+}
+
+.preset-save {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.preset-save input {
+  min-width: 0;
+  flex: 1;
+  padding: 7px 0;
+  border: 0;
+  border-bottom: 1px solid #dedede;
+  border-radius: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 10px;
+}
+
+.preset-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-button {
+  padding: 8px 13px;
+  border: 0;
+  color: var(--paper);
+  background: var(--ink);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 9px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.text-button.compact {
+  white-space: nowrap;
+}
+
+.text-button:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.preset-message {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 8px;
+  line-height: 1.5;
 }
 
 .slider-control {
@@ -301,7 +517,7 @@ input:focus-visible,
   .visual-controls {
     top: 72px;
     right: 10px;
-    width: 190px;
+    width: 230px;
     max-height: calc(100% - 176px);
   }
 
@@ -317,7 +533,11 @@ input:focus-visible,
   }
 
   .visual-controls h2 {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+  }
+
+  .control-group {
+    margin-bottom: 14px;
   }
 
   .slider-control {

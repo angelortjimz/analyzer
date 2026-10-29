@@ -1,4 +1,5 @@
-import { clamp, VISUAL_CONSTANTS } from './config'
+import { clamp, VISUAL_CONSTANTS, type AssignmentMode } from './config'
+import { hashToUnit } from './random'
 
 export interface CrestColumn {
   index: number
@@ -11,21 +12,6 @@ export interface CrestLayout {
   columns: CrestColumn[]
   topY: number
   baselineY: number
-}
-
-function hashToUnit(seed: number, column: number, slot: number, salt: number): number {
-  let value =
-    (seed ^
-      Math.imul(column + 1, 0x85ebca77) ^
-      Math.imul(slot + 1, 0xc2b2ae3d) ^
-      Math.imul(salt + 1, 0x9e3779b1)) >>>
-    0
-
-  value = Math.imul(value ^ (value >>> 16), 0x7feb352d)
-  value = Math.imul(value ^ (value >>> 15), 0x846ca68b)
-  value = (value ^ (value >>> 16)) >>> 0
-
-  return value / 4_294_967_296
 }
 
 export function createCrestLayout(
@@ -68,10 +54,26 @@ export function getCrestY(energy: number, layout: CrestLayout): number {
   return layout.baselineY - clamp(energy) * (layout.baselineY - layout.topY)
 }
 
-export function getColumnGlyphIndex(
+export function getColumnShuffleSlot(
   column: CrestColumn,
   timeSeconds: number,
   chaos: number,
+): number {
+  const safeChaos = clamp(chaos)
+  if (safeChaos === 0) {
+    return 0
+  }
+
+  const interval =
+    VISUAL_CONSTANTS.maxShuffleInterval *
+    (VISUAL_CONSTANTS.minShuffleInterval / VISUAL_CONSTANTS.maxShuffleInterval) ** safeChaos
+  const time = Math.max(0, Number.isFinite(timeSeconds) ? timeSeconds : 0)
+  return Math.floor(time / interval + column.shufflePhase)
+}
+
+export function getColumnGlyphIndex(
+  column: CrestColumn,
+  slot: number,
   glyphCount: number,
   seed: number,
 ): number {
@@ -79,13 +81,26 @@ export function getColumnGlyphIndex(
     return -1
   }
 
-  const safeChaos = clamp(chaos)
-  const interval =
-    VISUAL_CONSTANTS.maxShuffleInterval *
-    (VISUAL_CONSTANTS.minShuffleInterval / VISUAL_CONSTANTS.maxShuffleInterval) ** safeChaos
-  const time = Math.max(0, Number.isFinite(timeSeconds) ? timeSeconds : 0)
-  const slot = safeChaos === 0 ? 0 : Math.floor(time / interval + column.shufflePhase)
   const random = hashToUnit(seed, column.index, slot, 7)
-
   return Math.min(glyphCount - 1, Math.floor(random * glyphCount))
+}
+
+export function getColumnStyleIndex(
+  column: CrestColumn,
+  slot: number,
+  mode: AssignmentMode,
+  entryCount: number,
+  seed: number,
+  salt: number,
+): number {
+  if (entryCount <= 0) {
+    return -1
+  }
+  if (entryCount === 1) {
+    return 0
+  }
+
+  const assignmentSlot = mode === 'random' ? slot : 0
+  const random = hashToUnit(seed, column.index, assignmentSlot, salt)
+  return Math.min(entryCount - 1, Math.floor(random * entryCount))
 }

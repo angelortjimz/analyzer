@@ -1,125 +1,92 @@
-import { useId } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { VisualConfig } from '../visual/config'
+import type { BuiltinPreset, UserPreset } from '../visual/presets'
+import { CharacterControls } from './controls/CharacterControls'
+import { ColorControls } from './controls/ColorControls'
+import { FontControls } from './controls/FontControls'
+import { PresetControls } from './controls/PresetControls'
+import { ResponseControls } from './controls/ResponseControls'
 
 interface VisualControlsProps {
   config: VisualConfig
+  builtInPresets: BuiltinPreset[]
+  userPresets: UserPreset[]
+  storageMessage: string | null
   onChange: (patch: Partial<VisualConfig>) => void
+  onApplyBuiltIn: (id: string) => void
+  onApplyUser: (id: string) => void
+  onSavePreset: (name: string) => boolean
+  onGenerate: () => void
+  onReset: () => void
 }
 
-interface SliderControlProps {
-  label: string
-  value: number
-  min: number
-  max: number
-  step: number
-  displayValue: string
-  onChange: (value: number) => void
-}
-
-function SliderControl({
-  label,
-  value,
-  min,
-  max,
-  step,
-  displayValue,
-  onChange,
-}: SliderControlProps) {
-  const inputId = useId()
+function ControlGroup({
+  title,
+  defaultOpen = false,
+  children,
+}: {
+  title: string
+  defaultOpen?: boolean
+  children: ReactNode
+}) {
+  const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className="slider-control">
-      <div className="slider-label">
-        <label htmlFor={inputId}>{label}</label>
-        <output htmlFor={inputId}>{displayValue}</output>
-      </div>
-      <input
-        id={inputId}
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.currentTarget.value))}
-      />
-    </div>
+    <details
+      className="control-group"
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+    >
+      <summary>{title}</summary>
+      <div className="control-group-body">{children}</div>
+    </details>
   )
 }
 
-export function VisualControls({ config, onChange }: VisualControlsProps) {
-  const glyphsId = useId()
-
+export function VisualControls({
+  config,
+  builtInPresets,
+  userPresets,
+  storageMessage,
+  onChange,
+  onApplyBuiltIn,
+  onApplyUser,
+  onSavePreset,
+  onGenerate,
+  onReset,
+}: VisualControlsProps) {
   return (
     <aside className="visual-controls" aria-labelledby="composition-heading">
       <h2 id="composition-heading">Composition</h2>
 
-      <div className="glyph-control">
-        <label htmlFor={glyphsId}>Character pool</label>
-        <input
-          id={glyphsId}
-          type="text"
-          value={config.glyphs}
-          maxLength={160}
-          spellCheck={false}
-          autoComplete="off"
-          onChange={(event) => onChange({ glyphs: event.currentTarget.value })}
+      <ControlGroup title="Presets" defaultOpen>
+        <PresetControls
+          builtInPresets={builtInPresets}
+          userPresets={userPresets}
+          storageMessage={storageMessage}
+          onApplyBuiltIn={onApplyBuiltIn}
+          onApplyUser={onApplyUser}
+          onSave={onSavePreset}
+          onGenerate={onGenerate}
+          onReset={onReset}
         />
-      </div>
+      </ControlGroup>
 
-      <SliderControl
-        label="Density"
-        value={config.density}
-        min={0.65}
-        max={1.5}
-        step={0.05}
-        displayValue={`${config.density.toFixed(2)}×`}
-        onChange={(density) => onChange({ density })}
-      />
-      <SliderControl
-        label="Font size"
-        value={config.fontSize}
-        min={12}
-        max={36}
-        step={1}
-        displayValue={`${config.fontSize}px`}
-        onChange={(fontSize) => onChange({ fontSize })}
-      />
-      <SliderControl
-        label="Reactivity"
-        value={config.gain}
-        min={0.4}
-        max={4}
-        step={0.1}
-        displayValue={`${config.gain.toFixed(1)}×`}
-        onChange={(gain) => onChange({ gain })}
-      />
-      <SliderControl
-        label="Attack"
-        value={config.attack}
-        min={0.01}
-        max={0.3}
-        step={0.01}
-        displayValue={`${Math.round(config.attack * 1_000)}ms`}
-        onChange={(attack) => onChange({ attack })}
-      />
-      <SliderControl
-        label="Decay"
-        value={config.decay}
-        min={0.05}
-        max={1}
-        step={0.05}
-        displayValue={`${Math.round(config.decay * 1_000)}ms`}
-        onChange={(decay) => onChange({ decay })}
-      />
-      <SliderControl
-        label="Chaos"
-        value={config.chaos}
-        min={0}
-        max={1}
-        step={0.05}
-        displayValue={config.chaos === 0 ? 'Fixed' : `${Math.round(config.chaos * 100)}%`}
-        onChange={(chaos) => onChange({ chaos })}
-      />
+      <ControlGroup title="Characters" defaultOpen>
+        <CharacterControls config={config} onChange={onChange} />
+      </ControlGroup>
+
+      <ControlGroup title="Typography">
+        <FontControls config={config} onChange={onChange} />
+      </ControlGroup>
+
+      <ControlGroup title="Color">
+        <ColorControls config={config} onChange={onChange} />
+      </ControlGroup>
+
+      <ControlGroup title="Response">
+        <ResponseControls config={config} onChange={onChange} />
+      </ControlGroup>
     </aside>
   )
 }

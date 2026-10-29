@@ -14,9 +14,12 @@ Read `docs/roadmap.md` before changing scope. Implement only the current milesto
 - Do not replace the typographic crest with filled bars, axes, lines, a visible grid, glow, or decorative panels.
 - Amplitude controls only vertical crest position. Do not encode it through glyph choice, opacity, scale, or horizontal displacement.
 - Character selection is independent of amplitude. Chaos controls deterministic shuffle speed only.
-- Silence resolves to an empty white canvas after decay.
+- Font and color assignments support only **By column** and **Random**. Random styling changes on the same shuffle slot as the character.
+- Fonts and colors must never represent amplitude or frequency regions.
+- Silence resolves to the selected canvas background, which is white by default.
+- Generate randomizes the complete visual configuration within bounded, readable ranges without affecting audio or playback.
 - Preserve `docs/roadmap.md` and update checkboxes only after their behavior is implemented and verified.
-- Keep changes minimal and do not introduce additional visualization modes during Milestone 1.
+- Keep changes minimal and do not introduce additional visualization modes without an approved requirement.
 
 ## Design Patterns
 
@@ -43,9 +46,11 @@ Read `docs/roadmap.md` before changing scope. Implement only the current milesto
 - Derive stable column traits from the composition seed and column identity.
 - Derive shuffled glyphs from seed, column identity, and a time slot controlled by chaos.
 - Zero chaos keeps glyphs fixed; increasing chaos shortens the shuffle interval without affecting amplitude.
+- Random font and color assignments use the same column shuffle slot with distinct hash salts.
+- By-column font and color assignments remain stable while characters shuffle.
 - Use attack/decay envelopes for smooth vertical crest changes.
 - Preserve column identity during resize and unrelated configuration changes.
-- Parse the character pool safely, remove whitespace, and provide defaults for empty input.
+- Parse character pools and source text safely, remove whitespace, and provide defaults for empty input.
 
 ### Audio lifecycle
 
@@ -68,12 +73,14 @@ Read `docs/roadmap.md` before changing scope. Implement only the current milesto
 
 - Prefer browser APIs and small pure modules over dependencies.
 - Do not add a dependency for simple math, seeded hashing, class names, or state subscription.
+- Bundled fonts must use local, export-safe assets with appropriate licenses. Preload the catalog and fall back to System Mono.
+- Presets are versioned, locally stored, and contain no audio or playback state.
 - Measure before introducing glyph atlases, workers, or other optimization layers.
 - Avoid per-frame object churn where practical, but do not complicate the first renderer prematurely.
 - Cap excessive DPR/column density if needed to keep the default scene responsive.
 
 ## Validation
 
-Use pnpm scripts for development, build/typecheck, lint, and tests. Add focused Vitest coverage when changing pure spectrum, envelope, glyph, crest-layout, or deterministic-shuffle logic. After audio/canvas changes, manually verify upload, play, pause/resume, track end/restart, replacement, resize, tab restore, and error handling.
+Use pnpm scripts for development, build/typecheck, lint, and tests. Add focused Vitest coverage when changing pure spectrum, envelope, glyph, crest-layout, deterministic-shuffle, style-assignment, generation, or preset-storage logic. After audio/canvas changes, manually verify upload, play, pause/resume, track end/restart, replacement, resize, tab restore, font loading, assignments, presets, generation, and error handling.
 
 Do not mark roadmap work complete based only on compilation: the visual output must also satisfy the milestone's aesthetic and playback criteria.
