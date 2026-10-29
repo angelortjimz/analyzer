@@ -1,4 +1,5 @@
 import { VISUAL_CONSTANTS } from '../visual/config'
+import { clampPlaybackTime, clampVolume } from './playback'
 
 export type PlaybackStatus = 'idle' | 'loading' | 'ready' | 'playing' | 'paused' | 'ended' | 'error'
 
@@ -19,6 +20,7 @@ const INITIAL_SNAPSHOT: AudioSnapshot = {
 export class AudioEngine {
   private context: AudioContext | null = null
   private analyser: AnalyserNode | null = null
+  private volumeNode: GainNode | null = null
   private buffer: AudioBuffer | null = null
   private source: AudioBufferSourceNode | null = null
   private snapshot: AudioSnapshot = INITIAL_SNAPSHOT
@@ -27,6 +29,7 @@ export class AudioEngine {
   private playbackGeneration = 0
   private startedAt = 0
   private offset = 0
+  private volume = 1
 
   getSnapshot = (): AudioSnapshot => this.snapshot
 
@@ -123,7 +126,7 @@ export class AudioEngine {
         if (this.source === source) {
           this.source = null
         }
-        this.offset = 0
+        this.offset = buffer.duration
         this.updateSnapshot({ ...this.snapshot, status: 'ended', error: null })
       }
 
@@ -162,6 +165,49 @@ export class AudioEngine {
     await this.play()
   }
 
+  seek(seconds: number): void {
+    const buffer = this.buffer
+    if (!buffer) {
+      return
+    }
+
+    const wasPlaying = this.snapshot.status === 'playing'
+    const target = clampPlaybackTime(seconds, buffer.duration)
+    this.stopSource()
+    this.offset = target
+
+    if (wasPlaying && target < buffer.duration) {
+      this.updateSnapshot({ ...this.snapshot, status: 'paused', error: null })
+      void this.play()
+      return
+    }
+
+    const status =
+      target >= buffer.duration
+        ? 'ended'
+        : this.snapshot.status === 'ended' || this.snapshot.status === 'ready'
+          ? 'paused'
+          : this.snapshot.status
+    this.updateSnapshot({ ...this.snapshot, status, error: null })
+  }
+
+  setVolume(value: number): void {
+    this.volume = clampVolume(value)
+    const context = this.context
+    const volumeNode = this.volumeNode
+    if (!context || !volumeNode || context.state === 'closed') {
+      return
+    }
+
+    const now = context.currentTime
+    volumeNode.gain.cancelScheduledValues(now)
+    volumeNode.gain.setTargetAtTime(this.volume, now, 0.015)
+  }
+
+  getVolume(): number {
+    return this.volume
+  }
+
   readFrequencyData(target: Uint8Array<ArrayBuffer>): void {
     if (!this.analyser) {
       target.fill(0)
@@ -193,10 +239,12 @@ export class AudioEngine {
     this.buffer = null
     this.offset = 0
     this.analyser?.disconnect()
+    this.volumeNode?.disconnect()
 
     const context = this.context
     this.context = null
     this.analyser = null
+    this.volumeNode = null
     this.updateSnapshot(INITIAL_SNAPSHOT)
 
     if (context && context.state !== 'closed') {
@@ -204,23 +252,7 @@ export class AudioEngine {
     }
   }
 
-  private ensureAudioGraph(): { context: AudioContext; analyser: AnalyserNode } {
-    if (this.context && this.analyser && this.context.state !== 'closed') {
-      return { context: this.context, analyser: this.analyser }
-    }
-
-    const context = new AudioContext()
-    const analyser = context.createAnalyser()
-    analyser.fftSize = VISUAL_CONSTANTS.fftSize
-    analyser.smoothingTimeConstant = 0.55
-    analyser.connect(context.destination)
-    this.context = context
-    this.analyser = analyser
-
-    return { context, analyser }
-  }
-
-  private getCurrentTime(): number {
+  getCurrentTime(): number {
     if (!this.buffer || !this.context || this.snapshot.status !== 'playing') {
       return this.offset
     }
@@ -229,6 +261,34 @@ export class AudioEngine {
       this.buffer.duration,
       this.offset + Math.max(0, this.context.currentTime - this.startedAt),
     )
+  }
+
+  private ensureAudioGraph(): {
+    context: AudioContext
+    analyser: AnalyserNode
+    volumeNode: GainNode
+  } {
+    if (this.context && this.analyser && this.volumeNode && this.context.state !== 'closed') {
+      return {
+        context: this.context,
+        analyser: this.analyser,
+        volumeNode: this.volumeNode,
+      }
+    }
+
+    const context = new AudioContext()
+    const analyser = context.createAnalyser()
+    const volumeNode = context.createGain()
+    analyser.fftSize = VISUAL_CONSTANTS.fftSize
+    analyser.smoothingTimeConstant = 0.55
+    volumeNode.gain.value = this.volume
+    analyser.connect(volumeNode)
+    volumeNode.connect(context.destination)
+    this.context = context
+    this.analyser = analyser
+    this.volumeNode = volumeNode
+
+    return { context, analyser, volumeNode }
   }
 
   private stopSource(): void {

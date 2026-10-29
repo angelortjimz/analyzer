@@ -185,24 +185,24 @@ Audio file
 
 #### Playback
 
-- [ ] Add drag-and-drop audio upload.
-- [ ] Add seeking, elapsed time, duration, and volume controls.
-- [ ] Keep transport controls minimal and visually subordinate to the artwork.
-- [ ] Handle track changes and playback completion cleanly.
+- [x] Add drag-and-drop audio upload.
+- [x] Add seeking, elapsed time, duration, and volume controls.
+- [x] Keep transport controls minimal and visually subordinate to the artwork.
+- [x] Handle track changes and playback completion cleanly.
 
 #### Presentation
 
-- [ ] Keep customization in a persistent, borderless panel.
+- [x] Keep customization in a persistent, borderless panel.
 - [ ] Add a clean mode that hides all interface elements.
-- [ ] Preserve the composition across ordinary window resizing where practical.
-- [ ] Support high-DPI screens and sensible mobile/layout fallbacks.
+- [x] Preserve the composition across ordinary window resizing where practical.
+- [x] Support high-DPI screens and sensible mobile/layout fallbacks.
 
 #### Performance and motion quality
 
-- [ ] Avoid React state updates on every animation frame.
-- [ ] Cap excessive glyph counts and device pixel ratios when necessary.
-- [ ] Profile font/style changes and text drawing in dense scenes.
-- [ ] Introduce glyph caching or atlases only if profiling justifies them.
+- [x] Avoid React state updates on every animation frame.
+- [x] Cap excessive glyph counts and device pixel ratios when necessary.
+- [x] Profile font/style changes and text drawing in dense scenes.
+- [x] Introduce glyph caching or atlases only if profiling justifies them.
 - [ ] Tune envelopes, gain, and character shuffling against varied music.
 - [ ] Verify quiet, loud, sparse, and bass-heavy tracks.
 
