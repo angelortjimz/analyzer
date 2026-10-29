@@ -68,6 +68,10 @@ export class TypographicRenderer {
     }
   }
 
+  resetMotion(): void {
+    this.envelopes.reset()
+  }
+
   setAudioFormat(sampleRate: number, fftSize: number, frequencyBinCount: number): void {
     if (
       this.audioFormat.sampleRate === sampleRate &&

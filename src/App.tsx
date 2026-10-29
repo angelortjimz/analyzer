@@ -1,12 +1,18 @@
 import { useRef, useState, type DragEvent } from 'react'
 import { useAudioEngine } from './audio/useAudioEngine'
 import { AudioUpload } from './components/AudioUpload'
+import { ExportControls } from './components/ExportControls'
 import { PlaybackControls } from './components/PlaybackControls'
 import { TypographicCanvas } from './components/TypographicCanvas'
 import { VisualControls } from './components/VisualControls'
+import type { ExportCanvasHandle } from './export/exportCanvas'
+import type { ExportResolutionId } from './export/output'
+import { useTrackExporter } from './export/useTrackExporter'
 import { DEFAULT_VISUAL_CONFIG, sanitizeVisualConfig, type VisualConfig } from './visual/config'
 import { generateVisualConfig } from './visual/generator'
 import { randomSeed } from './visual/random'
+
+const EXPORTABLE_AUDIO_STATUSES = ['ready', 'playing', 'paused', 'ended'] as const
 
 function isFileDrag(event: DragEvent<HTMLElement>): boolean {
   return Array.from(event.dataTransfer.types).includes('Files')
@@ -14,12 +20,18 @@ function isFileDrag(event: DragEvent<HTMLElement>): boolean {
 
 export default function App() {
   const { engine, snapshot } = useAudioEngine()
+  const { exporter, snapshot: exportSnapshot } = useTrackExporter(engine)
   const [config, setConfig] = useState<VisualConfig>(() =>
     sanitizeVisualConfig(DEFAULT_VISUAL_CONFIG),
   )
+  const [exportResolution, setExportResolution] = useState<ExportResolutionId>('1080p')
   const [isDragging, setIsDragging] = useState(false)
+  const canvasHandleRef = useRef<ExportCanvasHandle>(null)
   const dragDepthRef = useRef(0)
   const isIdle = snapshot.status === 'idle'
+  const exportActive = ['preparing', 'recording', 'finalizing'].includes(exportSnapshot.status)
+  const canExportTrack = EXPORTABLE_AUDIO_STATUSES.some((status) => status === snapshot.status)
+  const exportSupport = exporter.getSupport()
 
   const updateConfig = (patch: Partial<VisualConfig>) => {
     setConfig((current) => ({ ...current, ...patch }))
@@ -44,6 +56,10 @@ export default function App() {
     }
 
     event.preventDefault()
+    if (exportActive) {
+      return
+    }
+
     dragDepthRef.current += 1
     setIsDragging(true)
   }
@@ -54,7 +70,7 @@ export default function App() {
     }
 
     event.preventDefault()
-    event.dataTransfer.dropEffect = 'copy'
+    event.dataTransfer.dropEffect = exportActive ? 'none' : 'copy'
   }
 
   const handleDragLeave = (event: DragEvent<HTMLElement>) => {
@@ -69,9 +85,27 @@ export default function App() {
     }
   }
 
+  const startExport = () => {
+    const canvasHandle = canvasHandleRef.current
+    if (!canvasHandle) {
+      return
+    }
+
+    void exporter.start(canvasHandle, exportResolution)
+  }
+
+  const loadTrack = (file: File) => {
+    exporter.resetFeedback()
+    void engine.load(file)
+  }
+
   const handleDrop = (event: DragEvent<HTMLElement>) => {
     event.preventDefault()
     resetDragState()
+
+    if (exportActive) {
+      return
+    }
 
     const files = Array.from(event.dataTransfer.files)
     if (files.length === 0) {
@@ -79,7 +113,7 @@ export default function App() {
     }
 
     const audioFile = files.find((file) => file.type.startsWith('audio/')) ?? files[0]
-    void engine.load(audioFile)
+    loadTrack(audioFile)
   }
 
   return (
@@ -90,16 +124,22 @@ export default function App() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <TypographicCanvas engine={engine} config={config} />
+      <TypographicCanvas ref={canvasHandleRef} engine={engine} config={config} />
 
       <section className="transport" aria-label="Audio controls">
         <div className="transport-row">
           <AudioUpload
             trackName={snapshot.trackName}
             loading={snapshot.status === 'loading'}
-            onSelect={(file) => void engine.load(file)}
+            disabled={exportActive}
+            onSelect={loadTrack}
           />
-          <PlaybackControls engine={engine} status={snapshot.status} duration={snapshot.duration} />
+          <PlaybackControls
+            engine={engine}
+            status={snapshot.status}
+            duration={snapshot.duration}
+            locked={exportActive}
+          />
           {isDragging ? (
             <span className="drop-hint" role="status">
               Drop audio to load it
@@ -112,6 +152,15 @@ export default function App() {
             )
           )}
         </div>
+        <ExportControls
+          snapshot={exportSnapshot}
+          support={exportSupport}
+          resolution={exportResolution}
+          trackReady={canExportTrack}
+          onResolutionChange={setExportResolution}
+          onExport={startExport}
+          onCancel={() => exporter.cancel()}
+        />
         {snapshot.error && (
           <p className="error-message" role="alert">
             {snapshot.error}

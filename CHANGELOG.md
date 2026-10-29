@@ -19,13 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deterministic Generate and Reset actions for the complete visual configuration.
 - Confined, borderless canvas workspace with a fixed composition column, full-width transport row, and responsive mobile fallback.
 - High-DPI rendering with device-pixel-ratio and glyph-column caps.
-- Unit-test coverage for spectrum processing, envelopes, crest layout, deterministic shuffling, font/color assignments, configuration sanitization, generation, and playback-time formatting.
+- Full-track, real-time MP4 export from the beginning of the track with canvas-size, 720p, and 1080p output options.
+- MP4 capability detection with clear unsupported-browser messaging instead of producing an invalid file.
+- Export progress, expected real-time duration, tab-visibility guidance, and cancellation with partial-file discard.
+- Unit-test coverage for spectrum processing, envelopes, crest layout, deterministic shuffling, font/color assignments, configuration sanitization, generation, playback-time formatting, export sizing, MP4 validation, and MP4 capability selection.
 
 ### Changed
 
-- Player volume is applied after the analyser so listening level does not affect the visual response.
+- Player volume is applied after the analyser so listening level does not affect either the visual response or the exported audio.
 - Replaced the full-viewport overlay layout with a fixed workspace that keeps all interface elements outside the artwork.
 - Playback time updates use a low-frequency timer instead of React state updates on every animation frame.
+- Export capture reuses the existing canvas frame loop and keeps its controls outside the captured artwork.
 
 ### Removed
 

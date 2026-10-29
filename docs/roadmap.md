@@ -221,22 +221,24 @@ Audio file
 
 #### Export validation spike
 
-- [ ] Feature-detect MP4 video/audio recording support in the target browser.
-- [ ] Validate canvas capture and audio routing in a small prototype.
-- [ ] Choose `MediaRecorder` only if it reliably supports the required MP4 codecs.
-- [ ] Otherwise evaluate WebCodecs with a lightweight MP4 muxer for Chromium-first export.
-- [ ] Do not treat renaming a WebM file as valid MP4 export.
+- [x] Feature-detect MP4 video/audio recording support in the target browser.
+- [x] Validate canvas capture and audio routing in a small prototype.
+- [x] Choose `MediaRecorder` only if it reliably supports the required MP4 codecs.
+- [x] Otherwise evaluate WebCodecs with a lightweight MP4 muxer for Chromium-first export.
+- [x] Do not treat renaming a WebM file as valid MP4 export.
+
+> **Validation result:** Chromium `MediaRecorder` produced valid H.264/AAC MP4 files with both video and original audio, so no WebCodecs/muxer dependency was needed.
 
 #### Export experience
 
-- [ ] Start export from the beginning of the track.
-- [ ] Capture the canvas and route the original audio into the recording stream.
-- [ ] Avoid double playback through duplicate audio routing.
-- [ ] Offer canvas-size and standard-resolution output options.
-- [ ] Show recording progress and the expected real-time duration.
-- [ ] Support cancellation and clean up streams, nodes, and object URLs.
-- [ ] Keep export controls outside the captured artwork.
-- [ ] Communicate that the export tab should remain visible if real-time capture requires it.
+- [x] Start export from the beginning of the track.
+- [x] Capture the canvas and route the original audio into the recording stream.
+- [x] Avoid double playback through duplicate audio routing.
+- [x] Offer canvas-size and standard-resolution output options.
+- [x] Show recording progress and the expected real-time duration.
+- [x] Support cancellation and clean up streams, nodes, and object URLs.
+- [x] Keep export controls outside the captured artwork.
+- [x] Communicate that the export tab should remain visible if real-time capture requires it.
 
 **Exit criteria**
 

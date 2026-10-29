@@ -3,10 +3,11 @@ import { useId } from 'react'
 interface AudioUploadProps {
   trackName: string | null
   loading: boolean
+  disabled?: boolean
   onSelect: (file: File) => void
 }
 
-export function AudioUpload({ trackName, loading, onSelect }: AudioUploadProps) {
+export function AudioUpload({ trackName, loading, disabled = false, onSelect }: AudioUploadProps) {
   const inputId = useId()
 
   return (
@@ -16,7 +17,7 @@ export function AudioUpload({ trackName, loading, onSelect }: AudioUploadProps) 
         className="file-input"
         type="file"
         accept="audio/*"
-        disabled={loading}
+        disabled={loading || disabled}
         onChange={(event) => {
           const file = event.currentTarget.files?.[0]
           if (file) {

@@ -6,11 +6,17 @@ interface PlaybackControlsProps {
   engine: AudioEngine
   status: PlaybackStatus
   duration: number
+  locked?: boolean
 }
 
 const SEEKABLE_STATUSES: readonly PlaybackStatus[] = ['ready', 'playing', 'paused', 'ended']
 
-export function PlaybackControls({ engine, status, duration }: PlaybackControlsProps) {
+export function PlaybackControls({
+  engine,
+  status,
+  duration,
+  locked = false,
+}: PlaybackControlsProps) {
   const seekId = useId()
   const volumeId = useId()
   const [elapsed, setElapsed] = useState(0)
@@ -19,8 +25,8 @@ export function PlaybackControls({ engine, status, duration }: PlaybackControlsP
   const draftTimeRef = useRef<number | null>(null)
   const displayDuration = Number.isFinite(duration) ? Math.max(0, duration) : 0
   const visibleTime = Math.min(Math.max(0, elapsed), displayDuration)
-  const seekable = SEEKABLE_STATUSES.includes(status) && displayDuration > 0
-  const playbackEnabled = ['ready', 'playing', 'paused', 'ended'].includes(status)
+  const seekable = SEEKABLE_STATUSES.includes(status) && displayDuration > 0 && !locked
+  const playbackEnabled = ['ready', 'playing', 'paused', 'ended'].includes(status) && !locked
   const label =
     status === 'playing'
       ? 'Pause'

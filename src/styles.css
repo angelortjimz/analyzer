@@ -172,8 +172,8 @@ select:focus-visible,
 }
 
 .file-input:disabled + .file-label {
-  cursor: wait;
-  opacity: 0.5;
+  cursor: default;
+  opacity: 0.45;
 }
 
 .track-name {
@@ -284,6 +284,115 @@ select:focus-visible,
   background: var(--paper);
   font-size: 10px;
   line-height: 1.6;
+}
+
+.export-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 12px;
+}
+
+.export-actions,
+.export-size,
+.export-feedback {
+  display: flex;
+  align-items: center;
+}
+
+.export-actions {
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+}
+
+.export-size {
+  gap: 7px;
+  color: var(--muted);
+  font-size: 9px;
+}
+
+.export-size select {
+  height: 30px;
+  padding: 0 20px 0 7px;
+  border: 0;
+  border-bottom: 1px solid #dedede;
+  border-radius: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.export-size select:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+.export-button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  color: var(--paper);
+  background: var(--ink);
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.export-button:hover:not(:disabled) {
+  background: #333333;
+}
+
+.export-button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.export-feedback {
+  flex: 1 1 280px;
+  gap: 9px;
+  min-width: 0;
+}
+
+.export-progress {
+  flex: 0 0 86px;
+  width: 86px;
+  height: 3px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  accent-color: var(--ink);
+}
+
+.export-progress::-webkit-progress-bar {
+  background: #ededeb;
+}
+
+.export-progress::-webkit-progress-value {
+  background: var(--ink);
+}
+
+.export-time {
+  flex: 0 0 auto;
+  color: var(--ink);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.export-status {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.export-status.is-error {
+  max-width: 560px;
+  color: #9a3535;
+  font-size: 10px;
 }
 
 .visual-controls {
@@ -561,6 +670,14 @@ input[type='color'] {
 
   .drop-hint {
     margin-left: 0;
+  }
+
+  .export-controls {
+    align-items: flex-start;
+  }
+
+  .export-feedback {
+    flex-basis: 100%;
   }
 }
 

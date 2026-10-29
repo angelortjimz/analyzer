@@ -10,6 +10,11 @@ export interface AudioSnapshot {
   error: string | null
 }
 
+export interface AudioRecordingTap {
+  stream: MediaStream
+  dispose: () => void
+}
+
 const INITIAL_SNAPSHOT: AudioSnapshot = {
   status: 'idle',
   trackName: null,
@@ -21,6 +26,7 @@ export class AudioEngine {
   private context: AudioContext | null = null
   private analyser: AnalyserNode | null = null
   private volumeNode: GainNode | null = null
+  private recordingDestination: MediaStreamAudioDestinationNode | null = null
   private buffer: AudioBuffer | null = null
   private source: AudioBufferSourceNode | null = null
   private snapshot: AudioSnapshot = INITIAL_SNAPSHOT
@@ -208,6 +214,46 @@ export class AudioEngine {
     return this.volume
   }
 
+  createRecordingTap(): AudioRecordingTap | null {
+    if (typeof MediaStream === 'undefined') {
+      return null
+    }
+
+    this.disposeRecordingTap()
+    const { context, analyser } = this.ensureAudioGraph()
+    if (context.state === 'closed') {
+      return null
+    }
+
+    const destination = context.createMediaStreamDestination()
+    analyser.connect(destination)
+    this.recordingDestination = destination
+    let disposed = false
+
+    return {
+      stream: destination.stream,
+      dispose: () => {
+        if (disposed) {
+          return
+        }
+
+        disposed = true
+        if (this.recordingDestination === destination) {
+          this.recordingDestination = null
+          try {
+            analyser.disconnect(destination)
+          } catch {
+            // The export tap may already have been disconnected during teardown.
+          }
+        }
+        destination.disconnect()
+        for (const track of destination.stream.getTracks()) {
+          track.stop()
+        }
+      },
+    }
+  }
+
   readFrequencyData(target: Uint8Array<ArrayBuffer>): void {
     if (!this.analyser) {
       target.fill(0)
@@ -236,6 +282,7 @@ export class AudioEngine {
   async dispose(): Promise<void> {
     this.loadGeneration += 1
     this.stopSource()
+    this.disposeRecordingTap()
     this.buffer = null
     this.offset = 0
     this.analyser?.disconnect()
@@ -289,6 +336,24 @@ export class AudioEngine {
     this.volumeNode = volumeNode
 
     return { context, analyser, volumeNode }
+  }
+
+  private disposeRecordingTap(): void {
+    const destination = this.recordingDestination
+    if (!destination) {
+      return
+    }
+
+    this.recordingDestination = null
+    try {
+      this.analyser?.disconnect(destination)
+    } catch {
+      // The analyser may already have been disconnected during disposal.
+    }
+    destination.disconnect()
+    for (const track of destination.stream.getTracks()) {
+      track.stop()
+    }
   }
 
   private stopSource(): void {
