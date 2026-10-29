@@ -10,7 +10,7 @@
 
 The application is a client-only web experience built around one highly polished visual mode: **Typographic Spectrum**.
 
-A white, full-viewport canvas contains a typographic spectral crest. The x axis represents frequency and the y axis represents amplitude, with one character drawn at each frequency column’s crest. Character selection is independent of amplitude and shuffles at a configurable speed, prioritizing an expressive display without sacrificing the recognizable spectrum shape.
+A dedicated white canvas area contains a typographic spectral crest. The x axis represents frequency and the y axis represents amplitude, with one character drawn at each frequency column’s crest. Character selection is independent of amplitude and shuffles at a configurable speed, prioritizing an expressive display without sacrificing the recognizable spectrum shape.
 
 ### Design principles
 
@@ -23,10 +23,10 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 
 ### Default experience
 
-1. The user opens a minimal white page with an upload prompt.
+1. The user opens the fixed workspace with a local-audio upload prompt.
 2. After selecting an audio file, the canvas remains white until playback produces audible energy.
 3. During playback, a crest of randomly shuffling letters and symbols follows frequency on the x axis and amplitude on the y axis.
-4. Controls remain visible for continuous tuning, and a clean mode can hide everything except the artwork.
+4. Controls remain visible for continuous tuning in a fixed composition column, with the transport in a full-width row below the artwork.
 5. Silence returns the canvas to empty white after the decay envelopes settle.
 
 ---
@@ -56,7 +56,7 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 2. **Spectrum processor** — Logarithmic bands, gain, smoothing, attack/decay, and normalized energy.
 3. **Typographic renderer** — Crest-column layout, deterministic character shuffling, amplitude-to-y mapping, and drawing.
 4. **Exporter** — Canvas video capture synchronized with the original track.
-5. **React interface** — Upload, transport controls, persistent customization controls, and clean mode.
+5. **React interface** — Upload, transport controls, persistent customization controls, and a fixed workspace layout.
 
 ```text
 Audio file
@@ -76,7 +76,7 @@ Audio file
 | --- | --- | --- |
 | 1. Visual proof of concept | Audio-driven typography validates the aesthetic | Highest |
 | 2. Typography customization | Pool characters, fonts, multi-font scenes, colors, and generation | High |
-| 3. Player and presentation polish | Complete player, clean mode, responsiveness, and performance | High |
+| 3. Player and presentation polish | Complete player, fixed workspace layout, responsiveness, and performance | High |
 | 4. Full-track MP4 export | Shareable video containing the original audio | Medium |
 | 5. Release hardening | Browser validation, tests, accessibility, and documentation | Medium |
 
@@ -90,38 +90,38 @@ Audio file
 
 #### Application foundation
 
-- [ ] Initialize the project with pnpm, Vite, React, and TypeScript.
-- [ ] Enable strict TypeScript configuration and establish basic linting/formatting.
-- [ ] Create a full-viewport, borderless white canvas.
-- [ ] Separate audio processing, visual processing, rendering, and React UI responsibilities.
-- [ ] Define typed visual configuration with sensible defaults.
+- [x] Initialize the project with pnpm, Vite, React, and TypeScript.
+- [x] Enable strict TypeScript configuration and establish basic linting/formatting.
+- [x] Create a dedicated, borderless white canvas area.
+- [x] Separate audio processing, visual processing, rendering, and React UI responsibilities.
+- [x] Define typed visual configuration with sensible defaults.
 
 #### Audio foundation
 
-- [ ] Add local audio-file selection.
-- [ ] Decode audio through Web Audio API.
-- [ ] Implement play, pause, and end-of-track handling.
-- [ ] Resume `AudioContext` from a valid user gesture where required.
-- [ ] Extract real-time frequency data through `AnalyserNode`.
-- [ ] Display useful errors for unsupported or unreadable files.
+- [x] Add local audio-file selection.
+- [x] Decode audio through Web Audio API.
+- [x] Implement play, pause, and end-of-track handling.
+- [x] Resume `AudioContext` from a valid user gesture where required.
+- [x] Extract real-time frequency data through `AnalyserNode`.
+- [x] Display useful errors for unsupported or unreadable files.
 
 #### Typographic renderer
 
-- [ ] Generate a responsive horizontal crest-column layout.
-- [ ] Map frequency data into a reduced set of perceptual bands.
-- [ ] Add configurable gain, smoothing, attack, and decay.
-- [ ] Map frequency to the x axis and amplitude exclusively to crest height on the y axis.
-- [ ] Select characters independently of amplitude using deterministic, speed-controlled shuffling.
-- [ ] Keep column identities and random seeds stable between frames.
-- [ ] Return to an empty white canvas after silent decay.
-- [ ] Render at device pixel ratio without changing the composition's layout unexpectedly.
+- [x] Generate a responsive horizontal crest-column layout.
+- [x] Map frequency data into a reduced set of perceptual bands.
+- [x] Add configurable gain, smoothing, attack, and decay.
+- [x] Map frequency to the x axis and amplitude exclusively to crest height on the y axis.
+- [x] Select characters independently of amplitude using deterministic, speed-controlled shuffling.
+- [x] Keep column identities and random seeds stable between frames.
+- [x] Return to an empty white canvas after silent decay.
+- [x] Render at device pixel ratio without changing the composition's layout unexpectedly.
 
 #### Initial controls
 
-- [ ] Unordered character pool.
-- [ ] Horizontal density and base font size.
-- [ ] Audio gain/reactivity.
-- [ ] Attack, decay, and character-shuffle chaos.
+- [x] Unordered character pool.
+- [x] Horizontal density and base font size.
+- [x] Audio gain/reactivity.
+- [x] Attack, decay, and character-shuffle chaos.
 
 **Exit criteria**
 
@@ -138,33 +138,33 @@ Audio file
 
 #### Character customization
 
-- [ ] Support custom character pools, including weighted duplicates.
-- [ ] Keep character selection independent of amplitude through the existing Chaos control.
-- [ ] Provide letters, symbols, and mixed pools for generated compositions.
+- [x] Support custom character pools, including weighted duplicates.
+- [x] Keep character selection independent of amplitude through the existing Chaos control.
+- [x] Provide letters, symbols, and mixed pools for generated compositions.
 
 #### Font customization
 
-- [ ] Provide a small collection of bundled, export-safe font choices.
-- [ ] Support a single-font composition.
-- [ ] Support multiple enabled fonts in one composition.
-- [ ] Assign fonts stably per column or reshuffle them whenever the column's character changes.
-- [ ] Wait for the font catalog to load before rendering or exporting.
-- [ ] Ensure changing fonts does not cause uncontrolled layout jumps.
+- [x] Provide a small collection of bundled, export-safe font choices.
+- [x] Support a single-font composition.
+- [x] Support multiple enabled fonts in one composition.
+- [x] Assign fonts stably per column or reshuffle them whenever the column's character changes.
+- [x] Wait for the font catalog to load before rendering or exporting.
+- [x] Ensure changing fonts does not cause uncontrolled layout jumps.
 
 #### Color customization
 
-- [ ] Default to near-black glyphs on a plain white background.
-- [ ] Support custom foreground and background colors.
-- [ ] Support multi-color palettes.
-- [ ] Assign colors stably per column or reshuffle them whenever the column's character changes.
-- [ ] Retain a simple monochrome mode.
+- [x] Default to near-black glyphs on a plain white background.
+- [x] Support custom foreground and background colors.
+- [x] Support multi-color palettes.
+- [x] Assign colors stably per column or reshuffle them whenever the column's character changes.
+- [x] Retain a simple monochrome mode.
 
 #### Generation and interface
 
-- [ ] Keep every control permanently visible without collapsible groups.
-- [ ] Add Reset-to-default and Generate actions below all other controls.
-- [ ] Make Generate randomize the complete visual configuration within valid, readable ranges.
-- [ ] Keep configuration session-local, with no presets or persistence.
+- [x] Keep every control permanently visible without collapsible groups.
+- [x] Add Reset-to-default and Generate actions below all other controls.
+- [x] Make Generate randomize the complete visual configuration within valid, readable ranges.
+- [x] Keep configuration session-local, with no presets or persistence.
 
 **Exit criteria**
 
@@ -193,7 +193,7 @@ Audio file
 #### Presentation
 
 - [x] Keep customization in a persistent, borderless panel.
-- [ ] Add a clean mode that hides all interface elements.
+- [x] Keep the artwork confined beside the controls and above the full-width transport row.
 - [x] Preserve the composition across ordinary window resizing where practical.
 - [x] Support high-DPI screens and sensible mobile/layout fallbacks.
 
@@ -208,7 +208,7 @@ Audio file
 
 **Exit criteria**
 
-- The interface can disappear completely, leaving only the typographic canvas.
+- The interface remains outside the artwork and never obscures the typographic canvas.
 - Playback, seeking, resizing, and changing tracks do not break the renderer.
 - Dense scenes degrade gracefully rather than making controls unusable.
 - The visual response feels consistent across different kinds of audio.
@@ -251,10 +251,10 @@ Audio file
 
 **Goal:** Make the focused release dependable and easy to maintain.
 
-- [ ] Unit-test logarithmic band mapping and normalization.
-- [ ] Unit-test envelope, attack/decay, and glyph-selection utilities.
-- [ ] Test stable seeded font, color, and column assignments.
-- [ ] Test configuration sanitization and deterministic full-composition generation.
+- [x] Unit-test logarithmic band mapping and normalization.
+- [x] Unit-test envelope, attack/decay, and glyph-selection utilities.
+- [x] Test stable seeded font, color, and column assignments.
+- [x] Test configuration sanitization and deterministic full-composition generation.
 - [ ] Verify upload errors, audio-context restrictions, and unsupported files.
 - [ ] Check keyboard access and visible focus states for controls.
 - [ ] Respect reduced-motion preferences where practical without disabling the core artwork unexpectedly.

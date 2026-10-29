@@ -81,6 +81,11 @@ Read `docs/roadmap.md` before changing scope. Implement only the current milesto
 - Avoid per-frame object churn where practical, but do not complicate the first renderer prematurely.
 - Cap excessive DPR/column density if needed to keep the default scene responsive.
 
+## Documentation
+
+- Update `CHANGELOG.md` for every notable user-visible, behavioral, performance, or architectural change. Add entries under `## [Unreleased]` using Keep a Changelog categories before considering the work complete.
+- Do not rewrite released changelog entries. When cutting a release, move `Unreleased` entries under a dated version heading.
+
 ## Validation
 
 Use pnpm scripts for development, build/typecheck, lint, and tests. Add focused Vitest coverage when changing pure spectrum, envelope, glyph, crest-layout, deterministic-shuffle, style-assignment, or generation logic. After audio/canvas changes, manually verify upload, play, pause/resume, track end/restart, replacement, resize, tab restore, font loading, assignments, generation, reset, and error handling.
