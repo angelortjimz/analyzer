@@ -6,7 +6,7 @@ import {
   getCrestY,
   type CrestLayout,
 } from './columns'
-import { clamp, parseCharacterSource, VISUAL_CONSTANTS, type VisualConfig } from './config'
+import { clamp, parseGlyphs, VISUAL_CONSTANTS, type VisualConfig } from './config'
 import { BandEnvelopes } from './envelope'
 import { getFontFamily } from './fonts'
 import { SpectrumProcessor } from './spectrum'
@@ -45,7 +45,7 @@ export class TypographicRenderer {
     this.canvas = canvas
     this.context = context
     this.config = { ...config }
-    this.glyphs = parseCharacterSource(config)
+    this.glyphs = parseGlyphs(config.glyphs)
     this.spectrum = new SpectrumProcessor({
       sampleRate: VISUAL_CONSTANTS.defaultSampleRate,
       fftSize: VISUAL_CONSTANTS.fftSize,
@@ -57,7 +57,7 @@ export class TypographicRenderer {
   setConfig(config: VisualConfig): void {
     const previous = this.config
     this.config = { ...config }
-    this.glyphs = parseCharacterSource(config)
+    this.glyphs = parseGlyphs(config.glyphs)
 
     if (
       previous.fontSize !== config.fontSize ||

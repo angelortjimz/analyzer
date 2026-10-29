@@ -2,7 +2,7 @@
 
 ## Typography Customization
 
-> Extend the spectral crest with expressive character, font, and color controls while preserving its unchanged axes: frequency horizontally, amplitude vertically, and character styling independently.
+> Extend the spectral crest with expressive pool-based characters, fonts, and colors while preserving its unchanged axes: frequency horizontally, amplitude vertically, and character styling independently.
 
 **Source:** `docs/roadmap.md`, Milestone 2  
 **Prerequisite:** Milestone 1 crest renderer, deterministic character shuffling, and local audio playback.
@@ -13,23 +13,24 @@
 
 ### Included
 
-- Character pools and source-text character derivation
-- Letters-only and symbols-only curated presets
-- Bundled, export-safe font catalog
+- Custom character pools with weighted duplicates
+- Bundled, export-safe fonts
 - Single-font and multi-font compositions
-- Font and color assignment by column or random shuffle
+- Font and color assignment by column or random character-shuffle slot
 - Configurable canvas background and glyph palette
-- Versioned user presets in `localStorage`
-- Curated built-in presets
-- Generate, reset, apply, and save actions
+- Fully visible, non-collapsible controls
+- Generate and Reset actions at the bottom of the panel
 - Focused tests and updated project guidance
 
 ### Excluded
 
+- Presets or saved configurations
+- Built-in visual presets
+- `localStorage` or any persistence layer
+- Source-text character mode
 - Frequency-region font or color assignment
-- Per-frame style transitions that are independent of character shuffling
 - Seeking, drag-and-drop, volume controls, clean mode, or export
-- Backend storage, accounts, or preset sharing
+- Backend storage, accounts, or configuration sharing
 - WebGL, workers, or UI component libraries
 
 ### Non-negotiable behavior
@@ -40,21 +41,19 @@
 - `Chaos = 0` freezes character and Random style assignments.
 - Silence becomes the selected background, white by default.
 - Font loading or assignment must not move column X positions or crest Y positions.
+- Every control remains visible; there are no collapsible control groups.
 
 ---
 
 ## 2. Configuration Model
 
-Expand `VisualConfig` with the following fields:
+`VisualConfig` contains:
 
 ```ts
-type CharacterSource = 'pool' | 'text'
 type AssignmentMode = 'column' | 'random'
 
 interface VisualConfig {
-  characterSource: CharacterSource
   glyphs: string
-  sourceText: string
   fontIds: FontId[]
   fontAssignment: AssignmentMode
   backgroundColor: string
@@ -70,41 +69,50 @@ interface VisualConfig {
 }
 ```
 
-A single entry in `fontIds` or `colors` provides single-font or monochrome mode. No separate mode switch is needed.
+A single entry in `fontIds` or `colors` provides single-font or monochrome mode.
 
-### Character sources
+### Character pool
 
-- **Pool:** direct character list. Duplicate characters may intentionally weight selection.
-- **Text:** unique, non-whitespace Unicode code points in first-appearance order.
-- Empty or whitespace-only values fall back to the default pool.
+- Always active; no source mode.
+- Whitespace is ignored.
+- Duplicate characters intentionally weight selection.
+- Unicode code points are preserved.
+- Empty pools fall back to the default pool.
 - Parsing happens outside the animation frame.
 
 ### Assignment modes
 
-- **By column:** seeded assignment remains fixed for the composition and survives character shuffles.
-- **Random:** reselect at each column's character-shuffle slot.
-  - Character, font, and color share the same time slot.
-  - Different hash salts prevent their selections from being artificially linked.
-  - Column phase offsets avoid synchronized global changes.
-  - Selections may repeat by chance.
-  - Zero Chaos freezes all Random assignments.
+**By column**
+
+- One seeded font and color per column.
+- Styling remains fixed while the character shuffles.
+- Seed changes may alter assignments.
+
+**Random**
+
+- Font and color reselect at each column's character-shuffle slot.
+- Character, font, and color share the same time slot.
+- Different hash salts prevent their random choices from being artificially linked.
+- Column phase offsets avoid synchronized global changes.
+- Random choices may repeat by chance.
+- Zero Chaos freezes all Random assignments.
 
 ### Sanitization
 
-All persisted or generated configurations pass through `sanitizeVisualConfig()`:
+All configurations pass through `sanitizeVisualConfig()`:
 
 - Numeric values are clamped to control ranges.
 - Font IDs must exist in the catalog.
 - Arrays contain at least one entry and are deduplicated.
 - Colors must be six-digit hex values.
-- Character modes and assignment modes must be known values.
-- Invalid top-level data falls back to safe defaults.
+- Assignment modes must be known values.
+- Invalid input falls back to safe defaults.
 
 ---
 
 ## 3. Shared Shuffle Slot
 
-Refactor deterministic shuffling into pure utilities:
+Pure utilities provide:
 
 ```ts
 getColumnShuffleSlot(column, timeSeconds, chaos)
@@ -112,15 +120,9 @@ getColumnGlyphIndex(column, slot, glyphCount, seed)
 getColumnStyleIndex(column, slot, mode, entryCount, seed, salt)
 ```
 
-The character, font, and color selectors use the same slot calculation. By-column styles use a fixed slot; Random styles use the live slot.
+Character, font, and color use the same slot calculation. By-column styles ignore the live slot; Random styles consume it.
 
-Different selectors use distinct salts:
-
-- Character
-- Font
-- Color
-
-This preserves deterministic behavior and makes Random styles change exactly when the column's character changes.
+Different selectors use distinct salts for characters, fonts, and colors.
 
 ---
 
@@ -128,145 +130,106 @@ This preserves deterministic behavior and makes Random styles change exactly whe
 
 ### Catalog
 
-Use a small typed catalog of bundled fonts. The initial catalog should include:
+Bundled local Fontsource assets:
 
 - System Mono (default fallback)
 - IBM Plex Mono
 - Space Mono
 - IBM Plex Serif
 
-Font packages come from Fontsource and are installed with pnpm. Only required 400-weight assets are included.
+Only Latin 400-weight assets are imported.
 
-### Rendering
+### Rendering and loading
 
-- Select the family from a stable or Random column assignment.
-- Use fixed font size and full opacity.
-- Set the family per glyph in Canvas 2D.
+- Preload the catalog once during application initialization.
+- Continue with System Mono fallbacks if loading fails.
+- Select a family per glyph from the active assignment.
+- Keep font size and opacity fixed.
 - Do not derive positions from glyph metrics.
-- Fall back to System Mono if a catalog entry is unavailable.
-
-### Loading
-
-Preload the complete catalog once during application initialization:
-
-1. Load bundled font CSS.
-2. Await `document.fonts.load()` for catalog families.
-3. Continue with System Mono fallbacks if loading fails.
-4. Render the application only after the loading attempt settles.
-
-This avoids fallback flashes when changing fonts and prepares for future export without introducing async font work into the frame loop.
 
 ---
 
-## 5. Rendering Changes
+## 5. Rendering
 
-`TypographicRenderer` will:
+`TypographicRenderer`:
 
-- Parse the active character source.
-- Clear and fill with `backgroundColor` each frame.
-- Continue using the existing spectrum processor and envelope values.
-- Keep crest mapping and shuffle logic unchanged.
-- Resolve per-column font and color from the active assignment modes and shared slot.
-- Draw one unchanged-size glyph per active column.
-- Preserve fixed opacity and font size.
-- Return to an empty selected background when energies decay to zero.
+- Parses the character pool.
+- Fills the canvas with `backgroundColor`.
+- Uses the existing spectrum processor and envelopes.
+- Keeps crest mapping and shuffle timing unchanged.
+- Resolves per-column font and color from the active modes and shared slot.
+- Draws one unchanged-size glyph per active column.
+- Preserves fixed opacity.
+- Returns to an empty selected background when energies decay to zero.
 
-Font and color changes must not rebuild the crest layout. Layout rebuilds remain limited to font size, density, seed, and canvas dimensions.
+Font and color changes do not rebuild layout. Layout rebuilds remain limited to font size, density, seed, and canvas dimensions.
 
 ---
 
-## 6. Generate Action
+## 6. Generate and Reset
 
-**Generate** replaces the previous seed-only regeneration action and randomizes the complete visual configuration within safe ranges:
+### Generate
 
-- Character source and curated character content
-- One to three enabled fonts
-- Font assignment mode
-- Coordinated background and glyph-color scheme
-- Color assignment mode
+**Generate** replaces the complete visual configuration within valid ranges:
+
+- Character pool
+- One to three fonts
+- Font assignment
+- Coordinated background and glyph palette
+- Color assignment
 - Font size and density
 - Gain, attack, decay, and Chaos
 - Composition seed
 
-### Constraints
+Constraints:
 
-- Use bounded numeric ranges.
-- Use valid catalog font IDs.
-- Use curated, readable background/palette combinations.
-- Use curated letters, symbols, mixed pools, and short source phrases.
-- Never alter audio, playback position, or track state.
-- Keep all settings reproducible from the generated seed.
+- Bounded numeric ranges
+- Valid catalog font IDs
+- Curated readable color schemes
+- Curated letters, symbols, and mixed pools
+- No changes to audio, playback position, or track state
+- Reproducible from the generated seed
 
-A pure `generateVisualConfig(seed)` function supplies deterministic generation. The UI creates a fresh random seed when Generate is clicked. Saving the result as a preset captures the exact composition.
+A pure `generateVisualConfig(seed)` supplies deterministic generation. The UI creates a fresh random seed when Generate is clicked.
 
----
+### Reset
 
-## 7. Presets
+Reset restores `DEFAULT_VISUAL_CONFIG` without affecting audio.
 
-### Built-in presets
-
-- **Default:** near-black System Mono on white
-- **Letters:** letters-only pool with a clean single font
-- **Symbols:** symbols-only pool with a contrasting bundled font
-- **Duotone:** two fonts and two colors using By column assignments
-
-Built-in presets are compiled into the application and are not written to storage.
-
-### User presets
-
-- Stored under one namespaced `localStorage` key.
-- Persist as a versioned object containing an array of presets.
-- Each preset contains a stable ID, name, creation time, and full visual configuration.
-- Parse through unknown-safe validation and sanitize every configuration.
-- Malformed JSON, unavailable storage, unknown versions, and invalid presets are handled without breaking the application.
-- Applying a preset replaces the visual configuration atomically.
-- Reset restores defaults without deleting saved presets.
-- Preset data contains no audio or playback state.
+Generate and Reset appear together below all controls.
 
 ---
 
-## 8. Interface
+## 7. Interface
 
-Break the current oversized panel into focused controls:
+All groups are permanently expanded:
 
-- Shared slider control
-- Preset controls
-- Character controls
-- Font controls
-- Color controls
-- Response controls
+1. Characters
+2. Typography
+3. Color
+4. Response
+5. Generate and Reset
 
-Use native HTML inputs and `<details>` groups. No component library is added.
+Use native HTML inputs and simple section headings. No collapsible groups, dialogs, or component libraries.
 
 ### Controls
 
-**Presets**
-
-- Apply built-in or saved preset
-- Save current configuration with a name
-- Generate a complete new composition
-- Reset to default
-- Concise storage error when persistence fails
-
 **Characters**
 
-- Pool or Text source toggle
-- Corresponding text input or textarea
-- Existing default pool remains available
+- Character pool text input
 
 **Typography**
 
-- Font checkboxes for the catalog
-- At least one font must remain enabled
+- Font checkboxes; at least one must remain enabled
 - By column or Random assignment
 - Font size
 - Horizontal density
 
 **Color**
 
-- Background color picker
-- Palette of one to four colors
-- Add and remove color controls; one color must remain
+- Background picker
+- One-to-four color palette
+- Add and remove controls; one color must remain
 - By column or Random assignment
 
 **Response**
@@ -276,50 +239,48 @@ Use native HTML inputs and `<details>` groups. No component library is added.
 - Decay
 - Chaos
 
-Control styling stays minimal, label-focused, and visually subordinate to the artwork.
+The panel may scroll vertically on short screens, but controls are never hidden behind disclosure widgets.
 
 ---
 
-## 9. Ordered Work
+## 8. Work Completed
 
-1. Write the Milestone 2 plan into `docs/`.
-2. Install Fontsource packages with pnpm and create the font catalog/preloader.
-3. Expand and sanitize the visual configuration.
-4. Add character-source parsing.
-5. Extract shared seeded-random and shuffle-slot utilities.
-6. Add font/color assignment functions and tests.
-7. Update the renderer for active character source, fonts, colors, and background.
-8. Add built-in presets, safe storage, and deterministic full-configuration generation.
-9. Split controls and integrate preset/generate/reset actions in `App`.
-10. Update `AGENTS.md` and Milestone 2 roadmap wording.
-11. Format, test, typecheck, lint, build, and manually review the visual modes.
+1. Expanded and sanitized the visual configuration.
+2. Added bundled font catalog and preloading.
+3. Extracted seeded-random and shared shuffle-slot utilities.
+4. Added font and color assignment functions.
+5. Updated renderer for fonts, colors, background, and pool-only characters.
+6. Added deterministic full-configuration generation.
+7. Replaced collapsible groups with permanently visible sections.
+8. Removed presets, storage, source-text mode, and their tests.
+9. Updated `AGENTS.md` and the roadmap.
 
 ---
 
-## 10. Verification
+## 9. Verification
 
 ### Automated
 
-- Character pool and source-text parsing, Unicode, deduplication, and fallbacks
+- Character pool parsing, Unicode, weighted duplicates, and fallbacks
 - Configuration validation and clamping
 - Font and color assignment determinism
 - By-column stability across shuffle slots
 - Random assignment synchronization with character slots
 - Zero-Chaos freeze behavior
-- Generate reproducibility, ranges, and valid catalog/color references
-- Preset serialization round trip and malformed storage recovery
+- Generate reproducibility, ranges, valid fonts, and valid colors
 - Existing spectrum, envelope, crest, and shuffle tests
 
 ### Manual
 
-- Upload and play audio after every preset and Generate
+- Upload and play audio after Generate and Reset
 - Confirm amplitude remains vertical only
-- Confirm fonts/colors never respond to amplitude
+- Confirm fonts and colors never respond to amplitude
 - Confirm By-column styles remain fixed while characters shuffle
 - Confirm Random styles change with characters and freeze at zero Chaos
-- Select all supported fonts and confirm no positional jumps
+- Select every supported font and confirm no positional jumps
 - Test one and multiple colors plus custom backgrounds
-- Reload and apply saved presets
+- Confirm every control is visible without opening a section
+- Confirm Generate and Reset are below all controls
 - Confirm silence uses the selected background
 - Confirm Generate leaves audio playback untouched
 
@@ -335,16 +296,18 @@ pnpm build
 
 ---
 
-## 11. Exit Criteria
+## 10. Exit Criteria
 
-- Character pools, source text, and dedicated letters/symbols presets work.
+- Custom character pools work with weighted duplicates and Unicode.
 - Single-font, multi-font, monochrome, and multi-color crests work reliably.
 - Fonts and colors use only By column and Random assignment.
 - By-column styling remains fixed during shuffles.
 - Random styling changes exactly on character-shuffle slots.
 - Zero Chaos freezes characters, fonts, and colors.
 - Font loading never causes crest layout shifts.
-- Generated compositions contain valid values and remain reproducible once saved.
-- Presets survive reloads; malformed storage cannot break the application.
+- Generated compositions contain valid values and are reproducible from their seed.
+- Every control is visible without collapsible groups.
+- Generate and Reset appear below everything else.
+- No preset, persistence, or source-text code remains.
 - Silence uses the selected background, white by default.
 - The default composition remains the most immediate and polished experience.

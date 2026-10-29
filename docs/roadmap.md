@@ -17,7 +17,7 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 - **Typography first:** Letters and symbols are the artwork.
 - **Restrained presentation:** White background, no visible grid, axes, bars, borders, glow, or decorative chrome.
 - **Intentional motion:** Use smooth vertical envelopes and deterministic character shuffling instead of uncontrolled frame-by-frame randomness.
-- **Immediate visual quality:** The default preset must look good without configuration.
+- **Immediate visual quality:** The default composition must look good without configuration.
 - **One excellent mode:** Perfect a single composition before adding alternatives.
 - **Local by default:** Audio stays in the browser; no backend or account system.
 
@@ -26,7 +26,7 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 1. The user opens a minimal white page with an upload prompt.
 2. After selecting an audio file, the canvas remains white until playback produces audible energy.
 3. During playback, a crest of randomly shuffling letters and symbols follows frequency on the x axis and amplitude on the y axis.
-4. Controls recede when not in use, and a clean mode hides everything except the artwork.
+4. Controls remain visible for continuous tuning, and a clean mode can hide everything except the artwork.
 5. Silence returns the canvas to empty white after the decay envelopes settle.
 
 ---
@@ -44,7 +44,7 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 | Animation | `requestAnimationFrame` outside React's render cycle |
 | Styling | Plain CSS or CSS Modules with custom properties |
 | State | React state for configuration; refs/engine objects for real-time data |
-| Persistence | Visual presets stored in `localStorage` |
+| Persistence | None; visual configuration remains session-local |
 | Backend | None |
 | Initial browser target | Simple Chromium-first desktop experience |
 | Initial visual modes | One polished Typographic Spectrum mode |
@@ -56,7 +56,7 @@ A white, full-viewport canvas contains a typographic spectral crest. The x axis 
 2. **Spectrum processor** — Logarithmic bands, gain, smoothing, attack/decay, and normalized energy.
 3. **Typographic renderer** — Crest-column layout, deterministic character shuffling, amplitude-to-y mapping, and drawing.
 4. **Exporter** — Canvas video capture synchronized with the original track.
-5. **React interface** — Upload, transport controls, customization, presets, and clean mode.
+5. **React interface** — Upload, transport controls, persistent customization controls, and clean mode.
 
 ```text
 Audio file
@@ -75,7 +75,7 @@ Audio file
 | Milestone | Outcome | Priority |
 | --- | --- | --- |
 | 1. Visual proof of concept | Audio-driven typography validates the aesthetic | Highest |
-| 2. Typography customization | Fonts, multi-font scenes, colors, glyphs, and presets | High |
+| 2. Typography customization | Pool characters, fonts, multi-font scenes, colors, and generation | High |
 | 3. Player and presentation polish | Complete player, clean mode, responsiveness, and performance | High |
 | 4. Full-track MP4 export | Shareable video containing the original audio | Medium |
 | 5. Release hardening | Browser validation, tests, accessibility, and documentation | Medium |
@@ -139,9 +139,8 @@ Audio file
 #### Character customization
 
 - [ ] Support custom character pools, including weighted duplicates.
-- [ ] Derive unique glyph pools from user-provided source text.
-- [ ] Add letters-only and symbols-only starting presets.
 - [ ] Keep character selection independent of amplitude through the existing Chaos control.
+- [ ] Provide letters, symbols, and mixed pools for generated compositions.
 
 #### Font customization
 
@@ -160,13 +159,12 @@ Audio file
 - [ ] Assign colors stably per column or reshuffle them whenever the column's character changes.
 - [ ] Retain a simple monochrome mode.
 
-#### Presets and interface
+#### Generation and interface
 
-- [ ] Add curated presets that demonstrate distinct but restrained looks.
-- [ ] Save and load versioned user presets through `localStorage`.
-- [ ] Add reset-to-default and Generate actions.
+- [ ] Keep every control permanently visible without collapsible groups.
+- [ ] Add Reset-to-default and Generate actions below all other controls.
 - [ ] Make Generate randomize the complete visual configuration within valid, readable ranges.
-- [ ] Group controls progressively so common options remain easy to find.
+- [ ] Keep configuration session-local, with no presets or persistence.
 
 **Exit criteria**
 
@@ -175,8 +173,9 @@ Audio file
 - Random font and color assignments change on exactly the character's shuffle slot.
 - Zero Chaos freezes characters, fonts, and Random color assignments.
 - Silence uses the selected background, which is white by default.
-- A saved preset reproduces the complete visual configuration after reloading.
-- The default preset remains the most immediate and polished experience.
+- Every control is visible without expanding a section.
+- Generate and Reset appear below all controls.
+- The default composition remains the most immediate and polished experience.
 
 ---
 
@@ -193,7 +192,7 @@ Audio file
 
 #### Presentation
 
-- [ ] Place customization in a collapsible, borderless drawer or panel.
+- [ ] Keep customization in a persistent, borderless panel.
 - [ ] Add a clean mode that hides all interface elements.
 - [ ] Preserve the composition across ordinary window resizing where practical.
 - [ ] Support high-DPI screens and sensible mobile/layout fallbacks.
@@ -255,7 +254,7 @@ Audio file
 - [ ] Unit-test logarithmic band mapping and normalization.
 - [ ] Unit-test envelope, attack/decay, and glyph-selection utilities.
 - [ ] Test stable seeded font, color, and column assignments.
-- [ ] Test preset serialization, defaults, and invalid stored settings.
+- [ ] Test configuration sanitization and deterministic full-composition generation.
 - [ ] Verify upload errors, audio-context restrictions, and unsupported files.
 - [ ] Check keyboard access and visible focus states for controls.
 - [ ] Respect reduced-motion preferences where practical without disabling the core artwork unexpectedly.
@@ -268,7 +267,7 @@ Audio file
 - A new user can upload a track and immediately get a polished result.
 - All primary controls are understandable without technical audio knowledge.
 - The clean canvas contains only letters and symbols.
-- Presets survive reloads, and export works in the documented target environment.
+- Generated configurations remain valid, and export works in the documented target environment.
 - No backend, account, or external audio processing is required.
 
 ---
@@ -279,6 +278,7 @@ Audio file
 - Microphone or live-audio input
 - Audio URLs and streaming-service integrations
 - Accounts, cloud saves, sharing backends, or collaboration
+- Presets, preset import/export, or persistent visual profiles
 - WebGL, shaders, and 3D scenes
 - Offline/deterministic rendering pipelines
 - Complex plugin systems

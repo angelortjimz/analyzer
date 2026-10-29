@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  DEFAULT_VISUAL_CONFIG,
-  parseCharacterSource,
-  parseGlyphs,
-  parseSourceText,
-  sanitizeVisualConfig,
-} from './config'
+import { DEFAULT_VISUAL_CONFIG, parseGlyphs, sanitizeVisualConfig } from './config'
 
 describe('glyph parsing', () => {
   it('preserves Unicode code points in a pool', () => {
@@ -18,31 +12,6 @@ describe('glyph parsing', () => {
 
   it('removes whitespace without deduplicating a pool', () => {
     expect(parseGlyphs(' a\nb a')).toEqual(['a', 'b', 'a'])
-  })
-
-  it('deduplicates source text in first-appearance order', () => {
-    expect(parseSourceText('letter letter')).toEqual(['l', 'e', 't', 'r'])
-  })
-
-  it('falls back safely for empty source text', () => {
-    expect(parseSourceText(' \n ')).toEqual(Array.from(DEFAULT_VISUAL_CONFIG.glyphs))
-  })
-
-  it('selects characters from the configured source', () => {
-    expect(
-      parseCharacterSource({
-        characterSource: 'text',
-        glyphs: 'ignored pool',
-        sourceText: 'abcabc',
-      }),
-    ).toEqual(['a', 'b', 'c'])
-    expect(
-      parseCharacterSource({
-        characterSource: 'pool',
-        glyphs: 'abcabc',
-        sourceText: 'ignored',
-      }),
-    ).toEqual(['a', 'b', 'c', 'a', 'b', 'c'])
   })
 })
 
@@ -88,14 +57,12 @@ describe('sanitizeVisualConfig', () => {
   it('falls back when arrays and modes are empty or unknown', () => {
     const config = sanitizeVisualConfig({
       ...DEFAULT_VISUAL_CONFIG,
-      characterSource: 'unknown',
       fontIds: [],
       fontAssignment: 'frequency',
       colors: [],
       colorAssignment: 'frequency',
     })
 
-    expect(config.characterSource).toBe(DEFAULT_VISUAL_CONFIG.characterSource)
     expect(config.fontIds).toEqual(DEFAULT_VISUAL_CONFIG.fontIds)
     expect(config.fontAssignment).toBe(DEFAULT_VISUAL_CONFIG.fontAssignment)
     expect(config.colors).toEqual(DEFAULT_VISUAL_CONFIG.colors)

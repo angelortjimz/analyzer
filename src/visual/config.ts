@@ -1,12 +1,9 @@
 import { DEFAULT_FONT_ID, isFontId, type FontId } from './fonts'
 
-export type CharacterSource = 'pool' | 'text'
 export type AssignmentMode = 'column' | 'random'
 
 export interface VisualConfig {
-  characterSource: CharacterSource
   glyphs: string
-  sourceText: string
   fontIds: FontId[]
   fontAssignment: AssignmentMode
   backgroundColor: string
@@ -22,9 +19,7 @@ export interface VisualConfig {
 }
 
 export const DEFAULT_VISUAL_CONFIG: VisualConfig = {
-  characterSource: 'pool',
   glyphs: 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789:;+=*#%@',
-  sourceText: 'listen closely to the shape of sound',
   fontIds: [DEFAULT_FONT_ID],
   fontAssignment: 'column',
   backgroundColor: '#ffffff',
@@ -49,7 +44,6 @@ export const CONFIG_LIMITS = {
   maxFonts: 4,
   maxColors: 4,
   maxGlyphs: 500,
-  maxSourceText: 1_000,
 } as const
 
 export const VISUAL_CONSTANTS = {
@@ -79,25 +73,6 @@ export function isHexColor(value: unknown): value is string {
 export function parseGlyphs(value: string): string[] {
   const glyphs = Array.from(value).filter((glyph) => glyph.trim().length > 0)
   return glyphs.length > 0 ? glyphs : Array.from(DEFAULT_VISUAL_CONFIG.glyphs)
-}
-
-export function parseSourceText(value: string): string[] {
-  const unique = new Set<string>()
-  for (const glyph of Array.from(value)) {
-    if (glyph.trim().length > 0) {
-      unique.add(glyph)
-    }
-  }
-
-  return unique.size > 0 ? Array.from(unique) : Array.from(DEFAULT_VISUAL_CONFIG.glyphs)
-}
-
-export function parseCharacterSource(
-  config: Pick<VisualConfig, 'characterSource' | 'glyphs' | 'sourceText'>,
-): string[] {
-  return config.characterSource === 'text'
-    ? parseSourceText(config.sourceText)
-    : parseGlyphs(config.glyphs)
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -146,16 +121,7 @@ export function sanitizeVisualConfig(value: unknown): VisualConfig {
       : DEFAULT_VISUAL_CONFIG.seed
 
   return {
-    characterSource:
-      record.characterSource === 'text' || record.characterSource === 'pool'
-        ? record.characterSource
-        : DEFAULT_VISUAL_CONFIG.characterSource,
     glyphs: limitedString(record.glyphs, DEFAULT_VISUAL_CONFIG.glyphs, CONFIG_LIMITS.maxGlyphs),
-    sourceText: limitedString(
-      record.sourceText,
-      DEFAULT_VISUAL_CONFIG.sourceText,
-      CONFIG_LIMITS.maxSourceText,
-    ),
     fontIds: sanitizeFontIds(record.fontIds),
     fontAssignment:
       record.fontAssignment === 'random' || record.fontAssignment === 'column'

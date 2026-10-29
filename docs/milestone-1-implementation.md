@@ -26,7 +26,7 @@
 
 ### Excluded until later milestones
 
-- Seeking, volume UI, drag-and-drop, preset persistence, and clean mode
+- Seeking, volume UI, drag-and-drop, configuration persistence, and clean mode
 - Multiple fonts, multiple colors, or additional visualization modes
 - MP4/WebM export and media-capture infrastructure
 - Backend services, remote audio, microphone input, WebGL, or workers
@@ -212,7 +212,7 @@ The visual target is a field of letters whose intensity and movement propagate t
 
 ### Step 7 — Tune, test, and close the milestone
 
-1. Tune the default preset with several user-supplied tracks: quiet, loud, sparse, bass-heavy, and rhythmically dense.
+1. Tune the default composition with several user-supplied tracks: quiet, loud, sparse, bass-heavy, and rhythmically dense.
 2. Check that silence produces a calm resting composition rather than retained loud-frame data.
 3. Test repeated track loads, rapid play/pause, window resizing, high-DPI displays, and tab hide/restore.
 4. Inspect the console for AudioContext, disconnected-node, canvas, and React Strict Mode warnings.
@@ -273,7 +273,7 @@ The renderer should receive primitive data and configuration rather than import 
 | Resize changes composition unexpectedly | Preserve the global seed and hash cell coordinates; separate layout recalculation from identity generation. |
 | High-DPI rendering is expensive or blurry | Cap DPR at 2, scale the canvas transform correctly, and skip invisible glyphs. |
 | FFT mapping is technically precise but visually weak | Use 48–64 logarithmic bands and tune gain/envelopes for expression rather than measurement accuracy. |
-| Scope grows into Milestones 2–4 | Defer multi-font/color, presets, clean mode, advanced player features, and export. |
+| Scope grows into Milestones 2–4 | Defer multi-font/color, persistence, clean mode, advanced player features, and export. |
 
 ---
 
