@@ -1,12 +1,7 @@
 import { BandEnvelopes } from './envelope'
+import { createCrestLayout, getColumnGlyphIndex, getCrestY, type CrestLayout } from './columns'
 import { clamp, parseGlyphs, VISUAL_CONSTANTS, type VisualConfig } from './config'
-import { createGrid, type GlyphCell, type GlyphGrid } from './grid'
 import { SpectrumProcessor } from './spectrum'
-
-function smoothstep(start: number, end: number, value: number): number {
-  const normalized = clamp((value - start) / (end - start))
-  return normalized * normalized * (3 - 2 * normalized)
-}
 
 function sampleBand(energies: Float32Array, position: number): number {
   if (energies.length === 0) {
@@ -25,7 +20,7 @@ export class TypographicRenderer {
   private readonly context: CanvasRenderingContext2D
   private config: VisualConfig
   private glyphs: string[]
-  private grid: GlyphGrid = { cells: [], columns: 0, rows: 0 }
+  private layout: CrestLayout = { columns: [], topY: 0, baselineY: 1 }
   private spectrum: SpectrumProcessor
   private envelopes: BandEnvelopes
   private width = 1
@@ -61,7 +56,7 @@ export class TypographicRenderer {
       previous.density !== config.density ||
       previous.seed !== config.seed
     ) {
-      this.rebuildGrid()
+      this.rebuildLayout()
     }
   }
 
@@ -92,7 +87,7 @@ export class TypographicRenderer {
     }
 
     this.context.setTransform(this.dpr, 0, 0, this.dpr, 0, 0)
-    this.rebuildGrid()
+    this.rebuildLayout()
   }
 
   render(
@@ -116,50 +111,33 @@ export class TypographicRenderer {
     context.fillStyle = VISUAL_CONSTANTS.ink
     context.textAlign = 'center'
     context.textBaseline = 'middle'
+    context.font = `400 ${this.config.fontSize}px ${VISUAL_CONSTANTS.fontFamily}`
+    context.globalAlpha = 1
 
-    const restGlyphCount = Math.min(4, this.glyphs.length)
-    const fontSize = this.config.fontSize
-
-    for (const cell of this.grid.cells) {
-      const energy = this.getCellEnergy(cell, energies)
-      const wave = 0.94 + Math.sin(timeSeconds * 1.1 + cell.phase + cell.row * 0.17) * 0.06
-      const localEnergy = clamp(energy * cell.sensitivity * wave)
-      const threshold = cell.activationThreshold * 0.52
-      const activation = smoothstep(threshold, threshold + 0.3, localEnergy)
-      const opacity = Math.max(cell.restOpacity, activation * (0.3 + localEnergy * 0.7))
-
-      if (opacity < 0.015 || this.glyphs.length === 0) {
+    for (const column of this.layout.columns) {
+      const bandPosition = column.frequencyPosition * Math.max(0, energies.length - 1)
+      const energy = sampleBand(energies, bandPosition)
+      if (energy <= 0.004) {
         continue
       }
 
-      const restIndex = Math.min(restGlyphCount - 1, Math.floor(cell.glyphBias * restGlyphCount))
-      const energyIndex = Math.min(
-        this.glyphs.length - 1,
-        Math.floor(clamp(localEnergy * 0.9 + cell.glyphBias * 0.1) * this.glyphs.length),
+      const glyphIndex = getColumnGlyphIndex(
+        column,
+        timeSeconds,
+        this.config.chaos,
+        this.glyphs.length,
+        this.config.seed,
       )
-      const glyph = this.glyphs[activation > 0.04 ? energyIndex : restIndex]
-      const travel = this.config.motion * activation * fontSize * 0.16
-      const phase = cell.phase + timeSeconds * (0.35 + cell.sensitivity * 0.25)
-      const x = cell.x + cell.driftX * travel + Math.sin(phase) * travel * 0.35
-      const y = cell.y + cell.driftY * travel - activation * this.config.motion * fontSize * 0.12
-      const scale = 1 + activation * this.config.motion * 0.16
+      if (glyphIndex < 0) {
+        continue
+      }
 
-      context.globalAlpha = opacity
-      context.font = `400 ${fontSize * scale}px ${VISUAL_CONSTANTS.fontFamily}`
-      context.fillText(glyph, x, y)
+      context.fillText(this.glyphs[glyphIndex], column.x, getCrestY(energy, this.layout))
     }
-
-    context.globalAlpha = 1
   }
 
-  private getCellEnergy(cell: GlyphCell, energies: Float32Array): number {
-    const columnRatio = this.grid.columns <= 1 ? 0.5 : cell.column / (this.grid.columns - 1)
-    const position = columnRatio * Math.max(0, energies.length - 1) + cell.bandOffset
-    return sampleBand(energies, position)
-  }
-
-  private rebuildGrid(): void {
-    this.grid = createGrid(
+  private rebuildLayout(): void {
+    this.layout = createCrestLayout(
       this.width,
       this.height,
       this.config.fontSize,

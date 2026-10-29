@@ -6,11 +6,11 @@ describe('parseGlyphs', () => {
     expect(parseGlyphs('a😀b')).toEqual(['a', '😀', 'b'])
   })
 
-  it('uses the default ramp for empty input', () => {
+  it('uses the default pool for empty input', () => {
     expect(parseGlyphs('  \n ')).toEqual(Array.from(DEFAULT_VISUAL_CONFIG.glyphs))
   })
 
-  it('removes line breaks without removing intentional spaces', () => {
-    expect(parseGlyphs(' a\nb ')).toEqual([' ', 'a', 'b', ' '])
+  it('removes whitespace so the crest has no invisible glyphs', () => {
+    expect(parseGlyphs(' a\nb\t')).toEqual(['a', 'b'])
   })
 })

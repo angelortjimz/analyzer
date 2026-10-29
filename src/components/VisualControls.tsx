@@ -54,7 +54,7 @@ export function VisualControls({ config, onChange }: VisualControlsProps) {
       <h2 id="composition-heading">Composition</h2>
 
       <div className="glyph-control">
-        <label htmlFor={glyphsId}>Characters · quiet to loud</label>
+        <label htmlFor={glyphsId}>Character pool</label>
         <input
           id={glyphsId}
           type="text"
@@ -112,13 +112,13 @@ export function VisualControls({ config, onChange }: VisualControlsProps) {
         onChange={(decay) => onChange({ decay })}
       />
       <SliderControl
-        label="Motion"
-        value={config.motion}
+        label="Chaos"
+        value={config.chaos}
         min={0}
         max={1}
         step={0.05}
-        displayValue={`${Math.round(config.motion * 100)}%`}
-        onChange={(motion) => onChange({ motion })}
+        displayValue={config.chaos === 0 ? 'Fixed' : `${Math.round(config.chaos * 100)}%`}
+        onChange={(chaos) => onChange({ chaos })}
       />
     </aside>
   )

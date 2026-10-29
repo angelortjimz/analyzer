@@ -5,18 +5,18 @@ export interface VisualConfig {
   gain: number
   attack: number
   decay: number
-  motion: number
+  chaos: number
   seed: number
 }
 
 export const DEFAULT_VISUAL_CONFIG: VisualConfig = {
-  glyphs: ' .:;ilosvxO0#@',
+  glyphs: 'abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ0123456789:;+=*#%@',
   fontSize: 20,
   density: 1,
   gain: 1.8,
   attack: 0.045,
   decay: 0.28,
-  motion: 0.55,
+  chaos: 0.18,
   seed: 73421,
 }
 
@@ -28,7 +28,9 @@ export const VISUAL_CONSTANTS = {
   noiseFloor: 0.035,
   maxDpr: 2,
   maxDeltaSeconds: 0.1,
-  maxGridCells: 12_000,
+  maxColumns: 320,
+  minShuffleInterval: 0.055,
+  maxShuffleInterval: 1.4,
   defaultSampleRate: 48_000,
   fontFamily: "ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace",
   ink: '#171717',
@@ -36,11 +38,7 @@ export const VISUAL_CONSTANTS = {
 } as const
 
 export function parseGlyphs(value: string): string[] {
-  if (value.trim().length === 0) {
-    return Array.from(DEFAULT_VISUAL_CONFIG.glyphs)
-  }
-
-  const glyphs = Array.from(value).filter((glyph) => !'\n\r\t'.includes(glyph))
+  const glyphs = Array.from(value).filter((glyph) => glyph.trim().length > 0)
   return glyphs.length > 0 ? glyphs : Array.from(DEFAULT_VISUAL_CONFIG.glyphs)
 }
 

@@ -10,13 +10,13 @@
 
 The application is a client-only web experience built around one highly polished visual mode: **Typographic Spectrum**.
 
-A white, full-viewport canvas contains an invisible grid of glyphs. Audio energy influences character selection, opacity, scale, position, and motion. Frequency mapping remains perceptual rather than technically exhaustive, prioritizing an expressive and musical result.
+A white, full-viewport canvas contains a typographic spectral crest. The x axis represents frequency and the y axis represents amplitude, with one character drawn at each frequency column’s crest. Character selection is independent of amplitude and shuffles at a configurable speed, prioritizing an expressive display without sacrificing the recognizable spectrum shape.
 
 ### Design principles
 
 - **Typography first:** Letters and symbols are the artwork.
 - **Restrained presentation:** White background, no visible grid, axes, bars, borders, glow, or decorative chrome.
-- **Intentional motion:** Use smooth envelopes and stable glyph assignments instead of random frame-by-frame flickering.
+- **Intentional motion:** Use smooth vertical envelopes and deterministic character shuffling instead of uncontrolled frame-by-frame randomness.
 - **Immediate visual quality:** The default preset must look good without configuration.
 - **One excellent mode:** Perfect a single composition before adding alternatives.
 - **Local by default:** Audio stays in the browser; no backend or account system.
@@ -24,10 +24,10 @@ A white, full-viewport canvas contains an invisible grid of glyphs. Audio energy
 ### Default experience
 
 1. The user opens a minimal white page with an upload prompt.
-2. After selecting an audio file, a sparse arrangement of dark monospace glyphs appears.
-3. During playback, glyphs darken, change, shift, and propagate in response to the music.
+2. After selecting an audio file, the canvas remains white until playback produces audible energy.
+3. During playback, a crest of randomly shuffling letters and symbols follows frequency on the x axis and amplitude on the y axis.
 4. Controls recede when not in use, and a clean mode hides everything except the artwork.
-5. Silence leaves a subtle resting composition rather than uncontrolled movement.
+5. Silence returns the canvas to empty white after the decay envelopes settle.
 
 ---
 
@@ -54,7 +54,7 @@ A white, full-viewport canvas contains an invisible grid of glyphs. Audio energy
 
 1. **Audio engine** — File decoding, playback, pause, seeking, volume, and analyser data.
 2. **Spectrum processor** — Logarithmic bands, gain, smoothing, attack/decay, and normalized energy.
-3. **Typographic renderer** — Grid creation, glyph selection, stable font/color assignments, motion, and drawing.
+3. **Typographic renderer** — Crest-column layout, deterministic character shuffling, amplitude-to-y mapping, and drawing.
 4. **Exporter** — Canvas video capture synchronized with the original track.
 5. **React interface** — Upload, transport controls, customization, presets, and clean mode.
 
@@ -107,26 +107,27 @@ Audio file
 
 #### Typographic renderer
 
-- [ ] Generate an invisible, responsive glyph grid.
+- [ ] Generate a responsive horizontal crest-column layout.
 - [ ] Map frequency data into a reduced set of perceptual bands.
 - [ ] Add configurable gain, smoothing, attack, and decay.
-- [ ] Map energy to glyph selection, opacity, and restrained movement.
-- [ ] Keep cell identities and random seeds stable between frames.
-- [ ] Provide a sparse, visually calm resting state for silence.
+- [ ] Map frequency to the x axis and amplitude exclusively to crest height on the y axis.
+- [ ] Select characters independently of amplitude using deterministic, speed-controlled shuffling.
+- [ ] Keep column identities and random seeds stable between frames.
+- [ ] Return to an empty white canvas after silent decay.
 - [ ] Render at device pixel ratio without changing the composition's layout unexpectedly.
 
 #### Initial controls
 
-- [ ] Character set or ordered low-to-high-energy glyph ramp.
-- [ ] Grid density and base font size.
+- [ ] Unordered character pool.
+- [ ] Horizontal density and base font size.
 - [ ] Audio gain/reactivity.
-- [ ] Attack, decay, and motion intensity.
+- [ ] Attack, decay, and character-shuffle chaos.
 
 **Exit criteria**
 
 - The default scene looks intentional before any manual tuning.
-- Motion follows musical events without appearing like random character flicker.
-- The output is recognizably typographic, with no bars, axes, or visible grid.
+- Crest height follows musical events smoothly while character shuffling remains controlled by chaos.
+- The output is a recognizably typographic spectral crest, with no filled bars, axes, or visible grid.
 - Playback and rendering remain smooth at the default density.
 
 ---
@@ -138,7 +139,7 @@ Audio file
 #### Character customization
 
 - [ ] Support custom character sets.
-- [ ] Support an ordered glyph ramp based on visual intensity.
+- [ ] Support unordered character pools whose selection is independent of amplitude.
 - [ ] Optionally derive glyphs from user-provided source text.
 - [ ] Add letters-only and symbols-only starting presets.
 - [ ] Control the amount of character substitution.
@@ -148,7 +149,7 @@ Audio file
 - [ ] Provide a small collection of bundled, export-safe font choices.
 - [ ] Support a single-font composition.
 - [ ] Support multiple enabled fonts in one composition.
-- [ ] Assign fonts stably per cell, by frequency region, or by a regenerated composition seed.
+- [ ] Assign fonts stably per column, by frequency region, or by a regenerated composition seed.
 - [ ] Wait for font loading before rendering or exporting.
 - [ ] Ensure changing fonts does not cause uncontrolled layout jumps.
 
@@ -157,7 +158,7 @@ Audio file
 - [ ] Default to near-black glyphs on a plain white background.
 - [ ] Support custom foreground and background colors.
 - [ ] Support multi-color palettes.
-- [ ] Assign colors by frequency region or stable glyph/cell identity.
+- [ ] Assign colors by frequency region or stable glyph/column identity.
 - [ ] Retain a simple monochrome mode.
 
 #### Presets and interface
@@ -200,7 +201,7 @@ Audio file
 - [ ] Cap excessive glyph counts and device pixel ratios when necessary.
 - [ ] Profile font/style changes and text drawing in dense scenes.
 - [ ] Introduce glyph caching or atlases only if profiling justifies them.
-- [ ] Tune envelopes, thresholds, and motion against varied music.
+- [ ] Tune envelopes, gain, and character shuffling against varied music.
 - [ ] Verify quiet, loud, sparse, and bass-heavy tracks.
 
 **Exit criteria**
@@ -250,7 +251,7 @@ Audio file
 
 - [ ] Unit-test logarithmic band mapping and normalization.
 - [ ] Unit-test envelope, attack/decay, and glyph-selection utilities.
-- [ ] Test stable seeded font, color, and cell assignments.
+- [ ] Test stable seeded font, color, and column assignments.
 - [ ] Test preset serialization, defaults, and invalid stored settings.
 - [ ] Verify upload errors, audio-context restrictions, and unsupported files.
 - [ ] Check keyboard access and visible focus states for controls.
