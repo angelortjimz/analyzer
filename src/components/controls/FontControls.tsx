@@ -28,7 +28,7 @@ export function FontControls({ config, onChange }: FontControlsProps) {
     <div>
       <fieldset className="choice-fieldset">
         <legend>Enabled fonts</legend>
-        <div className="choice-list">
+        <div className="choice-list font-choice-list">
           {FONT_CATALOG.map((font) => {
             const checked = config.fontIds.includes(font.id)
             return (
@@ -63,7 +63,7 @@ export function FontControls({ config, onChange }: FontControlsProps) {
           <span>Random weight &amp; italic</span>
         </label>
         <span className="control-hint">
-          Each character becomes normal, bold, or italic. Chaos sets the speed.
+          Normal, bold, or italic when the font provides it. Chaos sets the speed.
         </span>
       </div>
 

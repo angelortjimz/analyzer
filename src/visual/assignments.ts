@@ -4,6 +4,7 @@ import {
   BOLD_FONT_WEIGHT,
   DEFAULT_FONT_ID,
   DEFAULT_FONT_WEIGHT,
+  getFontDefinition,
   type FontId,
   type FontWeight,
 } from './fonts'
@@ -22,6 +23,11 @@ const RANDOM_FONT_VARIANTS: readonly ColumnFontVariant[] = [
   DEFAULT_FONT_VARIANT,
   { weight: BOLD_FONT_WEIGHT, italic: false },
   { weight: DEFAULT_FONT_WEIGHT, italic: true },
+]
+
+const UPRIGHT_FONT_VARIANTS: readonly ColumnFontVariant[] = [
+  DEFAULT_FONT_VARIANT,
+  { weight: BOLD_FONT_WEIGHT, italic: false },
 ]
 
 export function getColumnFontId(
@@ -44,21 +50,18 @@ export function getColumnFontVariant(
   config: Pick<VisualConfig, 'randomWeightItalic' | 'seed'>,
   column: CrestColumn,
   slot: number,
+  fontId: FontId = DEFAULT_FONT_ID,
 ): ColumnFontVariant {
   if (!config.randomWeightItalic) {
     return DEFAULT_FONT_VARIANT
   }
 
-  const index = getColumnStyleIndex(
-    column,
-    slot,
-    'random',
-    RANDOM_FONT_VARIANTS.length,
-    config.seed,
-    17,
-  )
+  const variants = getFontDefinition(fontId).hasItalic
+    ? RANDOM_FONT_VARIANTS
+    : UPRIGHT_FONT_VARIANTS
+  const index = getColumnStyleIndex(column, slot, 'random', variants.length, config.seed, 17)
 
-  return RANDOM_FONT_VARIANTS[index] ?? DEFAULT_FONT_VARIANT
+  return variants[index] ?? DEFAULT_FONT_VARIANT
 }
 
 export function getColumnColor(

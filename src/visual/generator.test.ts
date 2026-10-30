@@ -22,6 +22,8 @@ describe('generateVisualConfig', () => {
 
       expect(config.fontIds.length).toBeGreaterThanOrEqual(1)
       expect(config.fontIds.length).toBeLessThanOrEqual(3)
+      expect(config.fontIds.length).toBeLessThanOrEqual(CONFIG_LIMITS.maxFonts)
+      expect(new Set(config.fontIds).size).toBe(config.fontIds.length)
       expect(config.fontIds.every(isFontId)).toBe(true)
       expect(config.colors.length).toBeGreaterThanOrEqual(1)
       expect(config.colors.length).toBeLessThanOrEqual(CONFIG_LIMITS.maxColors)

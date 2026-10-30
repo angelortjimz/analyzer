@@ -76,6 +76,7 @@ Read `docs/roadmap.md` before changing scope. Implement only the current milesto
 - Prefer browser APIs and small pure modules over dependencies.
 - Do not add a dependency for simple math, seeded hashing, class names, or state subscription.
 - Bundled fonts must use local, export-safe assets with appropriate licenses. Preload the catalog and fall back to System Mono.
+- Keep the bundled catalog varied across serif, sans, display, and handwriting; prefer new categories over additional monospace families.
 - Configuration is session-local. Do not add preset or persistence infrastructure without a new approved requirement.
 - Measure before introducing glyph atlases, workers, or other optimization layers.
 - Avoid per-frame object churn where practical, but do not complicate the first renderer prematurely.

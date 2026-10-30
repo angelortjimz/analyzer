@@ -136,8 +136,12 @@ Bundled local Fontsource assets:
 - IBM Plex Mono
 - Space Mono
 - IBM Plex Serif
+- Fraunces (soft display serif)
+- Bodoni Moda (high-contrast didone)
+- Archivo Narrow (condensed grotesque)
+- Caveat (handwritten; no italic face)
 
-Only Latin 400-weight assets are imported.
+Latin 400, 700, and 400 italic assets are imported. Caveat provides 400 and 700 only, so the variant selector uses upright weights for that family.
 
 ### Rendering and loading
 

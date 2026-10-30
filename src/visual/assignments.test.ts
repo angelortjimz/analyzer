@@ -129,6 +129,25 @@ describe('font and color assignments', () => {
     expect(variants.has('700|italic')).toBe(false)
   })
 
+  it('uses only upright variants for fonts without an italic face', () => {
+    const config = {
+      ...DEFAULT_VISUAL_CONFIG,
+      randomWeightItalic: true,
+      seed: 42,
+    }
+    const variants = new Set<string>()
+
+    for (const testColumn of columns.slice(0, 20)) {
+      for (let time = 0; time < 5; time += 0.2) {
+        const slot = getColumnShuffleSlot(testColumn, time, 0.9)
+        const variant = getColumnFontVariant(config, testColumn, slot, 'caveat')
+        variants.add(`${variant.weight}|${variant.italic ? 'italic' : 'upright'}`)
+      }
+    }
+
+    expect(variants).toEqual(new Set(['400|upright', '700|upright']))
+  })
+
   it('freezes random styling at zero chaos', () => {
     const config = {
       ...DEFAULT_VISUAL_CONFIG,

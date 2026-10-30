@@ -13,6 +13,10 @@
     "format": "prettier --write src vite.config.ts eslint.config.js"
   },
   "dependencies": {
+    "@fontsource/archivo-narrow": "^5.3.0",
+    "@fontsource/bodoni-moda": "^5.3.0",
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/fraunces": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
     "@fontsource/ibm-plex-serif": "^5.3.0",
     "@fontsource/space-mono": "^5.3.0",

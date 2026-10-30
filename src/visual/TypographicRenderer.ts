@@ -142,7 +142,7 @@ export class TypographicRenderer {
 
       const fontId = getColumnFontId(this.config, column, slot)
       const font = getFontFamily(fontId)
-      const variant = getColumnFontVariant(this.config, column, slot)
+      const variant = getColumnFontVariant(this.config, column, slot, fontId)
       const fontKey = `${fontId}|${variant.weight}|${variant.italic ? 'italic' : 'normal'}`
       const color = getColumnColor(this.config, column, slot)
       if (fontKey !== activeFontKey) {

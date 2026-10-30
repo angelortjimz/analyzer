@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_VISUAL_CONFIG, parseGlyphs, sanitizeVisualConfig } from './config'
+import { CONFIG_LIMITS, DEFAULT_VISUAL_CONFIG, parseGlyphs, sanitizeVisualConfig } from './config'
+import { FONT_CATALOG } from './fonts'
 
 describe('glyph parsing', () => {
   it('preserves Unicode code points in a pool', () => {
@@ -52,6 +53,17 @@ describe('sanitizeVisualConfig', () => {
     expect(config.fontIds).toEqual(['ibm-plex-mono'])
     expect(config.colors).toEqual(['#ff0000', '#00ff00'])
     expect(config.backgroundColor).toBe(DEFAULT_VISUAL_CONFIG.backgroundColor)
+  })
+
+  it('preserves every bundled font up to the catalog limit', () => {
+    const fontIds = FONT_CATALOG.map((font) => font.id)
+    const config = sanitizeVisualConfig({
+      ...DEFAULT_VISUAL_CONFIG,
+      fontIds,
+    })
+
+    expect(fontIds).toHaveLength(CONFIG_LIMITS.maxFonts)
+    expect(config.fontIds).toEqual(fontIds)
   })
 
   it('falls back when arrays and modes are empty or unknown', () => {

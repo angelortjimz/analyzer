@@ -43,7 +43,7 @@ export const CONFIG_LIMITS = {
   attack: { min: 0.01, max: 0.3 },
   decay: { min: 0.05, max: 1 },
   chaos: { min: 0, max: 1 },
-  maxFonts: 4,
+  maxFonts: 8,
   maxColors: 4,
   maxGlyphs: 500,
 } as const

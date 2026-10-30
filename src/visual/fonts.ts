@@ -4,24 +4,56 @@ export const FONT_CATALOG = [
     label: 'System Mono',
     family: 'System Mono',
     stack: "ui-monospace, SFMono-Regular, Consolas, 'Liberation Mono', monospace",
+    hasItalic: true,
   },
   {
     id: 'ibm-plex-mono',
     label: 'IBM Plex Mono',
     family: 'IBM Plex Mono',
     stack: "'IBM Plex Mono', ui-monospace, monospace",
+    hasItalic: true,
   },
   {
     id: 'space-mono',
     label: 'Space Mono',
     family: 'Space Mono',
     stack: "'Space Mono', ui-monospace, monospace",
+    hasItalic: true,
   },
   {
     id: 'ibm-plex-serif',
     label: 'IBM Plex Serif',
     family: 'IBM Plex Serif',
     stack: "'IBM Plex Serif', Georgia, serif",
+    hasItalic: true,
+  },
+  {
+    id: 'fraunces',
+    label: 'Fraunces',
+    family: 'Fraunces',
+    stack: "'Fraunces', Georgia, 'Times New Roman', serif",
+    hasItalic: true,
+  },
+  {
+    id: 'bodoni-moda',
+    label: 'Bodoni Moda',
+    family: 'Bodoni Moda',
+    stack: "'Bodoni Moda', Didot, 'Times New Roman', serif",
+    hasItalic: true,
+  },
+  {
+    id: 'archivo-narrow',
+    label: 'Archivo Narrow',
+    family: 'Archivo Narrow',
+    stack: "'Archivo Narrow', 'Arial Narrow', 'Helvetica Neue', sans-serif",
+    hasItalic: true,
+  },
+  {
+    id: 'caveat',
+    label: 'Caveat',
+    family: 'Caveat',
+    stack: "'Caveat', 'Segoe Script', cursive",
+    hasItalic: false,
   },
 ] as const
 
@@ -57,7 +89,9 @@ export async function preloadFontCatalog(): Promise<void> {
   for (const font of bundledFonts) {
     loads.push(document.fonts.load(`${DEFAULT_FONT_WEIGHT} 20px "${font.family}"`))
     loads.push(document.fonts.load(`${BOLD_FONT_WEIGHT} 20px "${font.family}"`))
-    loads.push(document.fonts.load(`italic ${DEFAULT_FONT_WEIGHT} 20px "${font.family}"`))
+    if (font.hasItalic) {
+      loads.push(document.fonts.load(`italic ${DEFAULT_FONT_WEIGHT} 20px "${font.family}"`))
+    }
   }
   await Promise.allSettled(loads)
 }

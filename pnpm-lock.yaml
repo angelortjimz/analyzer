@@ -166,6 +166,18 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/archivo-narrow':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/bodoni-moda':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/caveat':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/fraunces':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/ibm-plex-mono':
         specifier: ^5.3.0
         version: 5.3.0
@@ -338,6 +350,18 @@ packages:
   '@eslint/plugin-kit@0.7.3':
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+
+  '@fontsource/archivo-narrow@5.3.0':
+    resolution: {integrity: sha512-fK2Y7PdIP23+t5Dp7gh9n94zxTCdHD6M955aJ8QzR6RvW+5WgmryKySEvaCUAeSLXzA113hyW0BwEHHxHADX7Q==}
+
+  '@fontsource/bodoni-moda@5.3.0':
+    resolution: {integrity: sha512-Wt2XBCHivYxkTP3ydq/Ax+7VshwsOh/6ayA5om2t+yClCkGwLPj2Mi6OnyMANjyLcqDUWs4rlOHnc8SBLf6/pA==}
+
+  '@fontsource/caveat@5.3.0':
+    resolution: {integrity: sha512-eHTfzQxFSW9ABERRLNruHoNJmKed2J7pqTUc5lp4a4POMgXGKpxmWj3d9Hz10kmAg6iuTTLe6UagbA4bnsmfQw==}
+
+  '@fontsource/fraunces@5.3.0':
+    resolution: {integrity: sha512-LEHTOBiZufQzAvnAe2rZ8ZknbDS28Q9kzwb0L+gZJEmjLGr8hhZ/5NuHXwDuHBWhVXYoiGGXmrb0H6Ko/RrHTg==}
 
   '@fontsource/ibm-plex-mono@5.3.0':
     resolution: {integrity: sha512-eTgnZjZEGk1QtD3ZstF+Vclo2HLAni8YMy34/DxllwZvyz1lR/1RF/xTiAquOBO7MvqBx8D2Ig2WCPMVfdZu7Q==}
@@ -1371,6 +1395,14 @@ snapshots:
     dependencies:
       '@eslint/core': 1.2.1
       levn: 0.4.1
+
+  '@fontsource/archivo-narrow@5.3.0': {}
+
+  '@fontsource/bodoni-moda@5.3.0': {}
+
+  '@fontsource/caveat@5.3.0': {}
+
+  '@fontsource/fraunces@5.3.0': {}
 
   '@fontsource/ibm-plex-mono@5.3.0': {}
 

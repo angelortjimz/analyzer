@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Typographic spectral crest with logarithmic frequency mapping, vertical amplitude envelopes, and deterministic seeded character shuffling.
 - Character-pool, font, color, background, density, font-size, gain, attack, decay, and chaos customization.
 - Bundled IBM Plex Mono, Space Mono, and IBM Plex Serif fonts, plus System Mono fallback and catalog preloading.
+- Bundled Fraunces, Bodoni Moda, Archivo Narrow, and Caveat, expanding the font catalog to eight families with display serif, didone, condensed grotesque, and handwritten options.
 - Single-font, multi-font, monochrome, and multi-color compositions with By column and Random assignments.
 - Optional per-character normal, bold, or italic styling that changes on the character shuffle slot and follows Chaos speed.
 - Deterministic Generate and Reset actions for the complete visual configuration.
@@ -27,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Raised the enabled-font limit from four to eight so every bundled family can be combined in one composition.
+- Random weight and italic styling stays upright for families without an italic face.
 - Player volume is applied after the analyser so listening level does not affect either the visual response or the exported audio.
 - Replaced the full-viewport overlay layout with a fixed workspace that keeps all interface elements outside the artwork.
 - Playback time updates use a low-frequency timer instead of React state updates on every animation frame.

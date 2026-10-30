@@ -145,6 +145,7 @@ Audio file
 #### Font customization
 
 - [x] Provide a small collection of bundled, export-safe font choices.
+- [x] Expand the bundled catalog to eight families with varied non-monospace options.
 - [x] Support a single-font composition.
 - [x] Support multiple enabled fonts in one composition.
 - [x] Assign fonts stably per column or reshuffle them whenever the column's character changes.
