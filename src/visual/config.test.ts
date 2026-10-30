@@ -33,13 +33,28 @@ describe('sanitizeVisualConfig', () => {
       seed: 12.8,
     })
 
-    expect(config.fontSize).toBe(36)
+    expect(config.fontSize).toBe(96)
     expect(config.density).toBe(0.65)
     expect(config.gain).toBe(1.2)
     expect(config.attack).toBe(0.3)
     expect(config.decay).toBe(0.05)
     expect(config.chaos).toBe(0.57)
     expect(config.seed).toBe(12)
+  })
+
+  it('accepts the expanded font-size range', () => {
+    expect(
+      sanitizeVisualConfig({
+        ...DEFAULT_VISUAL_CONFIG,
+        fontSize: 72,
+      }).fontSize,
+    ).toBe(72)
+    expect(
+      sanitizeVisualConfig({
+        ...DEFAULT_VISUAL_CONFIG,
+        fontSize: 96,
+      }).fontSize,
+    ).toBe(96)
   })
 
   it('filters invalid fonts and colors', () => {

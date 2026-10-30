@@ -51,7 +51,7 @@ export function generateVisualConfig(seed: number): VisualConfig {
     backgroundColor: scheme.background,
     colors: [...scheme.colors],
     colorAssignment: random() < 0.55 ? 'column' : 'random',
-    fontSize: 14 + Math.round(random() * 16),
+    fontSize: Math.round(16 + Math.pow(random(), 1.8) * 80),
     density: rounded(0.7 + random() * 0.7, 0.05),
     gain: rounded(0.8 + random() * 2.7, 0.1),
     attack: rounded(0.02 + random() * 0.16, 0.01),

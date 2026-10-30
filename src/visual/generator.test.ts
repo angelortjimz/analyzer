@@ -16,6 +16,15 @@ describe('generateVisualConfig', () => {
     expect(config.glyphs.trim().length).toBeGreaterThan(0)
   })
 
+  it('uses the expanded font-size range across seeds', () => {
+    const sizes = Array.from({ length: 100 }, (_, seed) => generateVisualConfig(seed).fontSize)
+
+    expect(sizes.every((size) => Number.isInteger(size))).toBe(true)
+    expect(sizes.every((size) => size >= CONFIG_LIMITS.fontSize.min)).toBe(true)
+    expect(sizes.every((size) => size <= CONFIG_LIMITS.fontSize.max)).toBe(true)
+    expect(sizes.some((size) => size > 36)).toBe(true)
+  })
+
   it('produces valid fonts, colors, and bounded settings for many seeds', () => {
     for (let seed = 0; seed < 50; seed += 1) {
       const config = generateVisualConfig(seed)

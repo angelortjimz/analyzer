@@ -25,14 +25,14 @@ export function createCrestLayout(
   const safeHeight = Math.max(1, height)
   const safeFontSize = Math.max(1, fontSize)
   const safeDensity = clamp(density, 0.1, 4)
-  const horizontalPadding = Math.min(safeWidth * 0.08, safeFontSize * 1.5)
+  const horizontalPadding = Math.min(safeWidth * 0.2, safeFontSize * 1.5)
   const usableWidth = Math.max(0, safeWidth - horizontalPadding * 2)
   const columnWidth = (safeFontSize * 0.9) / safeDensity
   const columnCount = Math.min(
     VISUAL_CONSTANTS.maxColumns,
     Math.max(1, Math.floor(usableWidth / columnWidth)),
   )
-  const verticalPadding = Math.min(safeHeight * 0.2, Math.max(76, safeFontSize * 3))
+  const verticalPadding = Math.min(safeHeight * 0.3, Math.max(76, safeFontSize * 3))
   const topY = verticalPadding
   const baselineY = safeHeight - verticalPadding
   const columns: CrestColumn[] = []

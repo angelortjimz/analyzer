@@ -37,7 +37,7 @@ export const DEFAULT_VISUAL_CONFIG: VisualConfig = {
 }
 
 export const CONFIG_LIMITS = {
-  fontSize: { min: 12, max: 36 },
+  fontSize: { min: 12, max: 96 },
   density: { min: 0.65, max: 1.5 },
   gain: { min: 0.4, max: 4 },
   attack: { min: 0.01, max: 0.3 },

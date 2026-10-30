@@ -43,6 +43,17 @@ describe('createCrestLayout', () => {
     expect(dense.baselineY).toBe(sparse.baselineY)
   })
 
+  it('keeps large glyphs inside a narrow canvas', () => {
+    const layout = createCrestLayout(320, 300, 96, 1, 42)
+
+    expect(layout.columns.length).toBeGreaterThan(0)
+    expect(layout.columns[0].x).toBeGreaterThanOrEqual(48)
+    expect(layout.columns.at(-1)?.x).toBeLessThanOrEqual(272)
+    expect(layout.topY).toBeGreaterThanOrEqual(72)
+    expect(layout.baselineY).toBeLessThanOrEqual(228)
+    expect(layout.baselineY).toBeGreaterThan(layout.topY)
+  })
+
   it('caps columns and handles unusually small layouts', () => {
     const capped = createCrestLayout(8_000, 4_000, 12, 2, 42)
     const tiny = createCrestLayout(0, 0, 20, 1, 42)

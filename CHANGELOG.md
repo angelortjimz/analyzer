@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Raised the font-size control's upper bound from 36px to 96px and widened Generate's font-size range while keeping generated compositions readable.
 - Raised the enabled-font limit from four to eight so every bundled family can be combined in one composition.
 - Random weight and italic styling stays upright for families without an italic face.
 - Player volume is applied after the analyser so listening level does not affect either the visual response or the exported audio.
